@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/Home';
 import StatsScreen from '../screens/StatusScreen';
 import NewHabitScreen from '../screens/NewHabit';
+import ConfigScreen from '../screens/ConfigScreen';
 
 import { colors_white } from '../styles/theme';
 
@@ -38,6 +39,16 @@ function TabRoutes() {
             tabBarLabel: 'Estatísticas',
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={26} color={color} style={{ marginTop: -5 }} />
+            ),
+        }}
+      />
+      <Tab.Screen 
+        name="Configurações" 
+        component={ConfigScreen}
+        options={{
+            tabBarLabel: 'Configurações',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? "cog" : "cog"} size={26} color={color} style={{ marginTop: -3 }} />
             ),
         }}
       />
