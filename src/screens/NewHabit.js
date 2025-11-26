@@ -41,10 +41,20 @@ export default function NewHabitScreen({ navigation }) {
 
   async function handleSave() {
     if (!title.trim()) {
-      return Alert.alert('Ops!', 'Você precisa dar um nome para o seu hábito.');
+      return Toast.show({
+        type: 'error', // Vermelho (conforme configuramos no App.js)
+        text1: 'Erro:',
+        text2: 'O nome do hábito é obrigatório.',
+        visibilityTime: 3000,
+      });
     }
     if (frequency.length === 0) {
-      return Alert.alert('Ops!', 'Você precisa selecionar pelo menos um dia da semana.');
+      return Toast.show({
+        type: 'error',
+        text1: 'Erro:',
+        text2: 'A frequência do hábito é obrigatória.',
+        visibilityTime: 3000,
+      });
     }
     try {
       await createAndSaveHabit({
@@ -61,7 +71,12 @@ export default function NewHabitScreen({ navigation }) {
       navigation.goBack(); 
     } catch (error) {
       console.log(error);
-      Alert.alert('Erro.', 'Não foi possível salvar o hábito. Tente novamente.');
+      Toast.show({
+        type: 'error',
+        text1: 'Erro:',
+        text2: 'Ocorreu um erro ao salvar o hábito.',
+        visibilityTime: 3000,
+      });
     }
   }
 
