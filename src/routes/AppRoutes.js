@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screens/Home';
-import StatsScreen from '../screens/Stats';
+import StatsScreen from '../screens/StatusScreen';
 import NewHabitScreen from '../screens/NewHabit';
 
 import { colors_white } from '../styles/theme';
