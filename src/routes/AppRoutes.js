@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/Home';
 import StatsScreen from '../screens/Stats';
 import NewHabitScreen from '../screens/NewHabit';
-
 import { colors_white } from '../styles/theme';
 
 const Tab = createMaterialBottomTabNavigator();

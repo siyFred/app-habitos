@@ -4,6 +4,7 @@ export const fab = {
   backgroundColor: colors_white.primary,
   position: 'absolute',
   borderRadius: 16,
+  borderRadius: 16,
   bottom: 20,
   right: 20,
   shadowColor: "#000",
