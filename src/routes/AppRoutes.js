@@ -1,5 +1,5 @@
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ import ConfigScreen from '../screens/ConfigScreen';
 import { colors_white } from '../styles/theme';
 
 const Tab = createMaterialBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 function TabRoutes() {
   return (
@@ -28,7 +28,7 @@ function TabRoutes() {
         options={{
             tabBarLabel: 'Hábitos',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "checkbox" : "checkbox-outline"} size={26} color={color} style={{ marginTop: -5 }} />
+              <Ionicons name={focused ? "checkbox" : "checkbox-outline"} size={26} color={color} style={{ marginTop: -1 }} />
             ),
         }}
       />
@@ -38,7 +38,7 @@ function TabRoutes() {
         options={{
             tabBarLabel: 'Estatísticas',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={26} color={color} style={{ marginTop: -5 }} />
+              <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={26} color={color} style={{ marginTop: -1 }} />
             ),
         }}
       />
@@ -59,14 +59,16 @@ function TabRoutes() {
 export default function AppRoutes() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f2f2f2' }} edges={['top', 'left', 'right']}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false, ...TransitionPresets.FadeFromBottomAndroid}}>
         <Stack.Screen name="MainTabs" component={TabRoutes} />
         <Stack.Screen 
           name="NewHabit" 
           component={NewHabitScreen} 
           options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
+            ...TransitionPresets.ModalSlideFromBottomIOS,
+            presentation: 'transparentModal',
+            cardOverlayEnabled: true,
+            cardStyle: { backgroundColor: 'transparent' },
           }}
         />
       </Stack.Navigator>
