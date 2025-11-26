@@ -16,3 +16,57 @@ export const fab = {
   elevation: 4,
   // paper gerencia outras propriedades internamente
 }
+
+export const label = {
+  fontSize: 14,
+  fontWeight: 'bold',
+  color: '#333',
+  marginBottom: 8,
+};
+
+export const input = {
+  height: 50,
+  borderColor: '#ccc',
+  borderWidth: 1,
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  fontSize: 16,
+  color: '#000',
+  marginBottom: 15,
+};
+
+export const cancelButton = {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#383838',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+  marginTop: 20,
+  width: '48%',
+};
+
+export const cancelButtonText = {
+  color: '#FFF',
+  fontSize: 18,
+  fontWeight: 'bold',
+};
+
+export const saveButton = {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: colors_white.primary,
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+  marginTop: 20,
+  width: '48%',
+};
+
+export const saveButtonText = {
+  color: '#FFF',
+  fontSize: 18,
+  fontWeight: 'bold',
+};
