@@ -1,5 +1,5 @@
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,7 +9,7 @@ import NewHabitScreen from '../screens/NewHabit';
 import { colors_white } from '../styles/theme';
 
 const Tab = createMaterialBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 function TabRoutes() {
   return (
@@ -47,14 +47,16 @@ function TabRoutes() {
 export default function AppRoutes() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f2f2f2' }} edges={['top', 'left', 'right']}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false, ...TransitionPresets.FadeFromBottomAndroid}}>
         <Stack.Screen name="MainTabs" component={TabRoutes} />
         <Stack.Screen 
           name="NewHabit" 
           component={NewHabitScreen} 
           options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
+            ...TransitionPresets.ModalSlideFromBottomIOS,
+            presentation: 'transparentModal',
+            cardOverlayEnabled: true,
+            cardStyle: { backgroundColor: 'transparent' },
           }}
         />
       </Stack.Navigator>
