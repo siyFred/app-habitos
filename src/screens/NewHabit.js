@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity,ScrollView, Alert } from 'react-native'; 
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native'; 
+import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { dayButton, dayButtonSelected, dayText, dayTextSelected, label, input, cancelButton, cancelButtonText, saveButton, saveButtonText } from '../styles/styles_components';
-import { createAndSaveHabit, getAllHabits } from '../repositories/HabitRepository';
+import { createAndSaveHabit } from '../repositories/HabitRepository';
 
 import Toast from 'react-native-toast-message';
 
@@ -42,7 +43,7 @@ export default function NewHabitScreen({ navigation }) {
   async function handleSave() {
     if (!title.trim()) {
       return Toast.show({
-        type: 'error', // Vermelho (conforme configuramos no App.js)
+        type: 'error',
         text1: 'Erro:',
         text2: 'O nome do hábito é obrigatório.',
         visibilityTime: 3000,
@@ -152,13 +153,37 @@ export default function NewHabitScreen({ navigation }) {
           })}
         </View>
       </ScrollView>
-      <View flexDirection="row" justifyContent="space-between" widtgh="100%" marginTop={20} marginBottom={5}>
-        <TouchableOpacity style={cancelButton} onPress={() => navigation.goBack()}>
-        <Text style={cancelButtonText}>Cancelar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={saveButton} onPress={handleSave}>
-          <Text style={saveButtonText}>Salvar</Text>
-        </TouchableOpacity>
+      <View flexDirection="row" justifyContent="space-between" widtgh="100%" marginTop={20} marginBottom={5} gap={10}>
+        <Button 
+          mode="outlined" 
+          onPress={() => navigation.goBack()}
+          textColor="#666"
+          style={{ 
+            flex: 1, 
+            borderColor: '#DDD', 
+            borderRadius: 12,
+            justifyContent: 'center' 
+          }}
+          contentStyle={{ height: 50 }}
+          labelStyle={{ fontSize: 16, fontWeight: 'normal' }}
+        >
+          Cancelar
+        </Button>
+        <Button 
+          mode="contained" 
+          onPress={handleSave}
+          buttonColor="#7B1FA2"
+          textColor="#FFF"
+          style={{ 
+            flex: 1, 
+            borderRadius: 12,
+            justifyContent: 'center'
+          }}
+          contentStyle={{ height: 50 }}
+          labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
+        >
+          Salvar
+        </Button>
       </View>
     </View>
   )
