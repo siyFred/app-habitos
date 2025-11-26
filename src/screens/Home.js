@@ -18,7 +18,7 @@ export default function HomeScreen({ navigation }) {
   }
 
   function handleCreateHabit() {
-    
+    navigation.navigate('NewHabit');
   }
 
   return (
@@ -35,7 +35,7 @@ export default function HomeScreen({ navigation }) {
           fontWeight: '600',
         }}
         extended={isExtended} 
-        onPress={() => console.log('Clicou')}
+        onPress={() => handleCreateHabit()}
         visible={true} 
         animateFrom={'right'}
         iconMode={'dynamic'}
