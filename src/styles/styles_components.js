@@ -1,12 +1,18 @@
-export const button_create_task = {
-  backgroundColor: 'blue',
-  color: '#FFFFFF',
+import { colors_white } from './theme.js';
+
+export const fab = {
+  backgroundColor: colors_white.primary,
   position: 'absolute',
-  borderRadius: 20,
+  borderRadius: 16,
   bottom: 20,
   right: 20,
-  width: 60,
-  height: 60,
-  justifyContent: 'center',
-  alignItems: 'center'
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.30,
+  shadowRadius: 4.65,
+  elevation: 4,
+  // paper gerencia outras propriedades internamente
 }
