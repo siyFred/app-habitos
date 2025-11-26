@@ -18,7 +18,7 @@ export const fab = {
 }
 
 export const label = {
-  fontSize: 14,
+  fontSize: 15,
   fontWeight: 'bold',
   color: '#333',
   marginBottom: 8,
@@ -33,6 +33,28 @@ export const input = {
   fontSize: 16,
   color: '#000',
   marginBottom: 15,
+};
+
+export const dayButton = {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: '#F0F0F0',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+export const dayButtonSelected = {
+  backgroundColor: colors_white.primary,
+};
+
+export const dayText = {
+  color: '#000',
+  fontWeight: 'bold',
+};
+
+export const dayTextSelected = {
+  color: '#FFF',
 };
 
 export const cancelButton = {

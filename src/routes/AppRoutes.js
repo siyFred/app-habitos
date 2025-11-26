@@ -27,7 +27,7 @@ function TabRoutes() {
         options={{
             tabBarLabel: 'Hábitos',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "checkbox" : "checkbox-outline"} size={26} color={color} style={{ marginTop: -5 }} />
+              <Ionicons name={focused ? "checkbox" : "checkbox-outline"} size={26} color={color} style={{ marginTop: -1 }} />
             ),
         }}
       />
@@ -37,7 +37,7 @@ function TabRoutes() {
         options={{
             tabBarLabel: 'Estatísticas',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={26} color={color} style={{ marginTop: -5 }} />
+              <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={26} color={color} style={{ marginTop: -1 }} />
             ),
         }}
       />
