@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { useState, useRef, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
 import { colors_white } from "../styles/theme";
 import { MOCK_HABITS } from "../mocks/mock_data.js";
 
@@ -11,15 +11,32 @@ const CartaoEstatistica = ({ titulo, valor, descricao }) => (
   </View>
 );
 
-const CartaoDesempenhoHabito = ({ nomeHabito, porcentagem }) => (
-  <View style={styles.habitCard}>
-    <Text style={styles.habitName}>{nomeHabito}</Text>
-    <View style={styles.progressBarBackground}>
-      <View style={[styles.progressBarFill, { width: `${porcentagem}%` }]} />
+const CartaoDesempenhoHabito = ({ nomeHabito, porcentagem }) => {
+  const animWidth = useRef(new Animated.Value(porcentagem)).current;
+
+  useEffect(() => {
+    Animated.timing(animWidth, {
+      toValue: porcentagem,
+      duration: 400,
+      useNativeDriver: false,
+    }).start();
+  }, [porcentagem]);
+
+  return (
+    <View style={styles.habitCard}>
+      <Text style={styles.habitName}>{nomeHabito}</Text>
+      <View style={styles.progressBarBackground}>
+        <Animated.View style={[styles.progressBarFill, {
+          width: animWidth.interpolate({
+            inputRange: [0, 100],
+            outputRange: ['0%', '100%'],
+          })
+        }]} />
+      </View>
+      <Text style={styles.habitPercentage}>{porcentagem.toFixed(0)}%</Text>
     </View>
-    <Text style={styles.habitPercentage}>{porcentagem.toFixed(0)}%</Text>
-  </View>
-);
+  );
+};
 
 export default function TelaStatus() {
   const [periodoDias, setPeriodoDias] = useState(7);
