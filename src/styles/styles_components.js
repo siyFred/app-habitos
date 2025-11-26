@@ -67,13 +67,13 @@ export const cancelButton = {
   paddingHorizontal: 20,
   borderRadius: 8,
   marginTop: 20,
+  height: 50,
   width: '48%',
 };
 
 export const cancelButtonText = {
   color: '#FFF',
-  fontSize: 18,
-  fontWeight: 'bold',
+  fontSize: 17,
 };
 
 export const saveButton = {
@@ -85,11 +85,11 @@ export const saveButton = {
   paddingHorizontal: 20,
   borderRadius: 8,
   marginTop: 20,
+  height: 50,
   width: '48%',
 };
 
 export const saveButtonText = {
   color: '#FFF',
-  fontSize: 18,
-  fontWeight: 'bold',
+  fontSize: 17,
 };

@@ -4,6 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { dayButton, dayButtonSelected, dayText, dayTextSelected, label, input, cancelButton, cancelButtonText, saveButton, saveButtonText } from '../styles/styles_components';
+import { createAndSaveHabit, getAllHabits } from '../repositories/HabitRepository';
+
+import Toast from 'react-native-toast-message';
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
@@ -36,27 +39,30 @@ export default function NewHabitScreen({ navigation }) {
     return `${hours}:${minutes}`;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!title.trim()) {
-      return Alert.alert('Ops', 'Dê um nome para o seu hábito!');
+      return Alert.alert('Ops!', 'Você precisa dar um nome para o seu hábito.');
     }
     if (frequency.length === 0) {
-      return Alert.alert('Calma lá', 'Selecione pelo menos um dia da semana.');
+      return Alert.alert('Ops!', 'Você precisa selecionar pelo menos um dia da semana.');
     }
-
-    const newHabit = {
-      id: Date.now().toString(), // ID único temporário
-      title,
-      description: description || null,
-      frequency,
-      completedDates: [],
-      notificationTime: formatTime(notificationDate) || null,
-    };
-
-    navigation.navigate('MainTabs', {
-      screen: 'Meus Hábitos',
-      params: { newHabit } 
-    });
+    try {
+      await createAndSaveHabit({
+        title,
+        description: description || null,
+        frequency,
+        notificationTime: formatTime(notificationDate)
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Hábito criado com sucesso!',
+        visibilityTime: 4000,
+      });
+      navigation.goBack(); 
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Erro.', 'Não foi possível salvar o hábito. Tente novamente.');
+    }
   }
 
   return (
