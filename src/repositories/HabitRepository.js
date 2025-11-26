@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createHabitModel } from '../models/HabitModel';
+import { createHabitModel } from '../models/Habit';
 
 const HABIT_COLLECTION = '@habitos:habits';
 
