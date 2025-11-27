@@ -16,3 +16,12 @@ export const fab = {
   elevation: 4,
   // paper gerencia outras propriedades internamente
 }
+
+const style = StyleSheet.create ({
+  text_habits: {
+    text: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+})

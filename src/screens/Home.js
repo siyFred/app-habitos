@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text} from 'react-native';
 import { AnimatedFAB } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { fab } from '../styles/styles_components.js'
+
+
 
 export default function HomeScreen({ navigation }) {
   const [isExtended, setIsExtended] = useState(true);
@@ -23,7 +25,15 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <Text>Welcome to the Home Screen!</Text>
+      <View style={{
+      backgroundColor: "#3e2465",
+      height: 25,
+      width: 300,
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+        <Text style={{ text: '#FFFFFF', alignItems: 'center', justifyContent: 'center',}}>Meus hábitos</Text>
+      </View>
       <AnimatedFAB
         label="Novo Hábito "
         icon={({ size, color }) => (
