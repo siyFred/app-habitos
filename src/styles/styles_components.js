@@ -4,6 +4,7 @@ export const fab = {
   backgroundColor: colors_white.primary,
   position: 'absolute',
   borderRadius: 16,
+  borderRadius: 16,
   bottom: 20,
   right: 20,
   shadowColor: "#000",
@@ -16,12 +17,3 @@ export const fab = {
   elevation: 4,
   // paper gerencia outras propriedades internamente
 }
-
-const style = StyleSheet.create ({
-  text_habits: {
-    text: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-})
