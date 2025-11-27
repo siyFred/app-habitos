@@ -37,3 +37,13 @@ export async function createAndSaveHabit({ title, description, frequency, notifi
     throw error;
   }
 }
+
+export async function deleteAllHabits() {
+  try {
+    await AsyncStorage.removeItem(HABIT_COLLECTION);
+    console.log('Todos os hábitos foram apagados.');
+  } catch (error) {
+    console.log('Erro ao apagar todos os hábitos:', error);
+    throw error;
+  }
+}

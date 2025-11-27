@@ -48,7 +48,7 @@ function TabRoutes() {
         options={{
             tabBarLabel: 'Configurações',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "cog" : "cog"} size={26} color={color} style={{ marginTop: -3 }} />
+              <Ionicons name={focused ? "cog" : "cog"} size={26} color={color} style={{ marginTop: -1 }} />
             ),
         }}
       />

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
 import { colors_white } from "../styles/theme";
-import { MOCK_HABITS } from "../mocks/mock_data.js";
+import { getAllHabits } from "../repositories/HabitRepository";
+import { useFocusEffect } from '@react-navigation/native';
 
 const CartaoEstatistica = ({ titulo, valor, descricao }) => (
   <View style={styles.card}>
@@ -39,7 +40,19 @@ const CartaoDesempenhoHabito = ({ nomeHabito, porcentagem }) => {
 };
 
 export default function TelaStatus() {
+  const [habits, setHabits] = useState([]);
   const [periodoDias, setPeriodoDias] = useState(7);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchHabits = async () => {
+        const data = await getAllHabits();
+        setHabits(data);
+      };
+  
+      fetchHabits();
+    }, [])
+  );
 
   const formatarData = (date) => {
     const y = date.getFullYear();
@@ -52,13 +65,13 @@ export default function TelaStatus() {
   const hojeString = formatarData(hoje);
   const diaSemanaHoje = hoje.getDay();
 
-  const habitosHoje = MOCK_HABITS.filter(habit => habit.frequency.includes(diaSemanaHoje));
+  const habitosHoje = habits.filter(habit => habit.frequency.includes(diaSemanaHoje));
   const totalHabitosHoje = habitosHoje.length;
   const concluidosHoje = habitosHoje.filter(habit => habit.completedDates.includes(hojeString)).length;
   const porcentagemHoje = totalHabitosHoje > 0 ? (concluidosHoje / totalHabitosHoje) * 100 : 0;
 
   let maiorSequencia = 0;
-  MOCK_HABITS.forEach(habit => {
+  habits.forEach(habit => {
     let sequenciaAtual = 0;
     const sortedDates = habit.completedDates
       .map(d => {
@@ -83,7 +96,7 @@ export default function TelaStatus() {
     }
   });
 
-  const desempenhoHabitos = MOCK_HABITS.map(habit => {
+  const desempenhoHabitos = habits.map(habit => {
     let diasConsiderados = 0;
     let diasConcluidos = 0;
 
@@ -122,6 +135,14 @@ export default function TelaStatus() {
       </View>
 
       <View style={styles.segmentedContainer} accessible accessibilityRole="tablist">
+        <TouchableOpacity
+          accessibilityRole="tab"
+          accessibilityState={{ selected: periodoDias === 1 }}
+          style={[styles.segmentedButton, periodoDias === 1 && styles.segmentedButtonActive]}
+          onPress={() => setPeriodoDias(1)}
+        >
+          <Text style={[styles.segmentedText, periodoDias === 1 && styles.segmentedTextActive]}>Hoje</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           accessibilityRole="tab"
           accessibilityState={{ selected: periodoDias === 7 }}

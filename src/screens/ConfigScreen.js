@@ -1,10 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { colors_white } from '../styles/theme';
+import { deleteAllHabits } from '../repositories/HabitRepository';
+import Toast from 'react-native-toast-message';
 
 export default function ConfigScreen() {
   const [isThemeModalVisible, setThemeModalVisible] = useState(false);
+
+  const handleDeleteAllData = () => {
+    Alert.alert(
+      "Apagar Todos os Dados",
+      "Você tem certeza? Esta ação não pode ser desfeita e todos os seus hábitos serão perdidos.",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        { text: "Apagar", style: 'destructive', onPress: async () => {
+            await deleteAllHabits();
+            Toast.show({ type: 'success', text1: 'Dados apagados com sucesso!' });
+        }}
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -30,7 +49,7 @@ export default function ConfigScreen() {
           subtitle="Claro e Escuro" 
           onPress={() => setThemeModalVisible(true)}
         />
-        <OptionItem icon={<Ionicons name="trash" size={28} color="#96d7eb" />} title="Apagar Dados" />
+        <OptionItem icon={<Ionicons name="trash" size={28} color= {colors_white.primary} />} title="Apagar Dados" onPress={handleDeleteAllData} />
       </View>
 
       <Modal
