@@ -13,8 +13,7 @@ const toastConfig = {
       {...props}
       style={{
         borderLeftColor: colors_white.primary,
-        marginLeft: 80
-       }}
+      }}
       contentContainerStyle={{ paddingHorizontal: 15 }}
       text1Style={{
         fontSize: 15,
