@@ -65,15 +65,15 @@ export default function TelaStatus() {
   const hojeString = formatarData(hoje);
   const diaSemanaHoje = hoje.getDay();
 
-  const habitosHoje = habits.filter(habit => habit.frequency.includes(diaSemanaHoje));
+  const habitosHoje = habits.filter(habit => (habit.frequency || []).includes(diaSemanaHoje));
   const totalHabitosHoje = habitosHoje.length;
-  const concluidosHoje = habitosHoje.filter(habit => habit.completedDates.includes(hojeString)).length;
+  const concluidosHoje = habitosHoje.filter(habit => (habit.completedDates || []).includes(hojeString)).length;
   const porcentagemHoje = totalHabitosHoje > 0 ? (concluidosHoje / totalHabitosHoje) * 100 : 0;
 
   let maiorSequencia = 0;
   habits.forEach(habit => {
     let sequenciaAtual = 0;
-    const sortedDates = habit.completedDates
+    const sortedDates = (habit.completedDates || [])
       .map(d => {
         const parts = d.split('-').map(Number);
         return new Date(parts[0], parts[1] - 1, parts[2]);
@@ -105,10 +105,10 @@ export default function TelaStatus() {
       dataVerificacao.setDate(hoje.getDate() - i);
       const diaSemana = dataVerificacao.getDay();
 
-      if (habit.frequency.includes(diaSemana)) {
+      if ((habit.frequency || []).includes(diaSemana)) {
         diasConsiderados++;
         const dataString = formatarData(dataVerificacao);
-        if (habit.completedDates.includes(dataString)) {
+        if ((habit.completedDates || []).includes(dataString)) {
           diasConcluidos++;
         }
       }
