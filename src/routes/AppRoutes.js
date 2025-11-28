@@ -11,6 +11,7 @@ import ConfigScreen from '../screens/ConfigScreen';
 import { colors_white } from '../styles/theme';
 
 const Tab = createMaterialBottomTabNavigator();
+
 const Stack = createStackNavigator();
 
 function TabRoutes() {
