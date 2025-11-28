@@ -38,6 +38,32 @@ export async function createAndSaveHabit({ title, description, frequency, notifi
   }
 }
 
+export async function updateHabit(id, updatedHabit) {
+  try {
+    const habits = await getAllHabits();
+    const newHabits = habits.map(habit =>
+      habit.id === id ? { ...habit, ...updatedHabit } : habit
+    );
+    await AsyncStorage.setItem(HABIT_COLLECTION, JSON.stringify(newHabits));
+    return newHabits;
+  } catch (error) {
+    console.log('Erro ao atualizar hábito:', error);
+    throw error;
+  }
+}
+
+export async function deleteHabit(id) {
+  try {
+    const habits = await getAllHabits();
+    const newHabits = habits.filter(habit => habit.id !== id);
+    await AsyncStorage.setItem(HABIT_COLLECTION, JSON.stringify(newHabits));
+    return newHabits;
+  } catch (error) {
+    console.log('Erro ao deletar hábito:', error);
+    throw error;
+  }
+}
+
 export async function deleteAllHabits() {
   try {
     await AsyncStorage.removeItem(HABIT_COLLECTION);
