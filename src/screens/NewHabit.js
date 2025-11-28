@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native'; 
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Platform } from 'react-native'; 
 import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -27,9 +27,15 @@ export default function NewHabitScreen({ navigation }) {
   }
 
   const handleTimeChange = (event, selectedDate) => {
-    setShowPicker(false);
-    if (selectedDate) {
-      setNotificationDate(selectedDate);
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+      if (selectedDate) {
+        setNotificationDate(selectedDate);
+      }
+    } else {
+      if (selectedDate) {
+        setNotificationDate(selectedDate);
+      }
     }
   };
 
@@ -121,16 +127,24 @@ export default function NewHabitScreen({ navigation }) {
           )}
         </TouchableOpacity>
         {showPicker && (
-          <DateTimePicker
-            value={notificationDate || new Date()}
-            mode="time"
-            is24Hour={true}
-            display="default"
-            onChange={handleTimeChange}
-          />
+          <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: 10 }}>
+            <DateTimePicker
+              value={notificationDate || new Date()}
+              mode="time"
+              is24Hour={true}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleTimeChange}
+              style={{ width: Platform.OS === 'ios' ? 320 : '100%' }}
+            />
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity onPress={() => setShowPicker(false)} style={{ marginTop: 8 }}>
+                <Text style={{ color: '#7B1FA2', fontWeight: '600' }}>Concluído</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
         <Text style={label}>Selecione a frequência</Text>
-        <View flexDirection="row" justifyContent="space-between" marginTop={5}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
           {WEEK_DAYS.map((day, index) => {
             const isSelected = frequency.includes(index);
             return (
@@ -153,7 +167,7 @@ export default function NewHabitScreen({ navigation }) {
           })}
         </View>
       </ScrollView>
-      <View flexDirection="row" justifyContent="space-between" widtgh="100%" marginTop={20} marginBottom={5} gap={10}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 20, marginBottom: 5 }}>
         <Button 
           mode="outlined" 
           onPress={() => navigation.goBack()}
