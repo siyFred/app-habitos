@@ -41,6 +41,7 @@ export default function HomeScreen({ navigation }) {
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState(null);
+  const [isFabVisible, setIsFabVisible] = useState(false);
 
   const selectedDateStr = formatDate(selectedDate);
   const selectedDayIndex = selectedDate.getDay();
@@ -53,6 +54,8 @@ export default function HomeScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadHabits();
+      setIsFabVisible(true);
+      return () => setIsFabVisible(false);
     }, [])
   );
 
@@ -307,18 +310,20 @@ export default function HomeScreen({ navigation }) {
         </View>
       </Modal>
 
-      <AnimatedFAB
-        label="Novo Hábito"
-        icon={({ size, color }) => <Ionicons name="add" size={size} color={color} />}
-        labelStyle={{ fontSize: 14, fontWeight: '600', marginLeft: -8 }}
-        extended={isExtended}
-        onPress={handleCreateHabit}
-        visible={true}
-        animateFrom={'right'}
-        iconMode={'dynamic'}
-        style={fab}
-        color="#FFF"
-      />
+      {isFabVisible && (
+        <AnimatedFAB
+          label="Novo Hábito"
+          icon={({ size, color }) => <Ionicons name="add" size={size} color={color} />}
+          labelStyle={{ fontSize: 14, fontWeight: '600', marginLeft: -8 }}
+          extended={isExtended}
+          onPress={handleCreateHabit}
+          visible={true}
+          animateFrom={'right'}
+          iconMode={'dynamic'}
+          style={fab}
+          color="#FFF"
+        />
+      )}
     </View>
   );
 }
