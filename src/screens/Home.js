@@ -7,6 +7,7 @@ import { getAllHabits, updateHabit, deleteHabit } from '../repositories/HabitRep
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import AllHabitsCard from './utils/AllHabitsCard';
+import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 
 const formatDate = (date) => {
   const y = date.getFullYear();
@@ -32,6 +33,59 @@ const getCurrentWeekDays = () => {
 
 const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const fullWeekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+// card habit (deve ser movido para um arquivo separado dps)
+const HabitCard = ({ item, isCompleted, onToggle, onOption }) => (
+  <View style={styles.cardContainer}>
+
+    <TouchableOpacity
+      style={styles.checkboxArea}
+      onPress={() => onToggle(item)}
+    >
+      <Ionicons
+        name={isCompleted ? "checkbox" : "square-outline"}
+        size={28}
+        color={isCompleted ? "#7B1FA2" : "#999"}
+      />
+    </TouchableOpacity>
+
+    <View style={styles.cardContent}>
+      <Text style={[
+        styles.cardTitle,
+        isCompleted && { textDecorationLine: 'line-through', color: '#999' }
+      ]}>
+        {item.title}
+      </Text>
+      {item.description ? (
+        <Text style={styles.cardDescription} numberOfLines={1}>
+          {item.description}
+        </Text>
+      ) : null}
+    </View>
+
+    {item.notificationTime && (
+      <View style={styles.timeContainer}>
+        <Ionicons name="time-outline" size={14} color="#777" />
+        <Text style={styles.timeText}>{item.notificationTime}</Text>
+      </View>
+    )}
+
+    <TouchableOpacity
+      style={styles.menuButton}
+      onPress={() => onOption(item)}
+    >
+      <Ionicons name="ellipsis-vertical" size={20} color="#999" />
+    </TouchableOpacity>
+  </View>
+);
+
+const AnimatedHabitCard = ({ item, isCompleted, onToggle, onOption }) => (
+  <Animated.View
+    layout={LinearTransition.springify()}
+  >
+    <HabitCard item={item} isCompleted={isCompleted} onToggle={onToggle} onOption={onOption} />
+  </Animated.View>
+);
 
 export default function HomeScreen({ navigation }) {
   const [isExtended, setIsExtended] = useState(true);
@@ -143,50 +197,74 @@ export default function HomeScreen({ navigation }) {
     }
   }
 
-  // card habit (deve ser movido para um arquivo separado dps)
-  const HabitCard = ({ item, isCompleted }) => (
-    <View style={styles.cardContainer}>
+  const renderItems = () => {
+    const items = [];
 
-      <TouchableOpacity
-        style={styles.checkboxArea}
-        onPress={() => handleToggleCheck(item)}
-      >
-        <Ionicons
-          name={isCompleted ? "checkbox" : "square-outline"}
-          size={28}
-          color={isCompleted ? "#7B1FA2" : "#999"}
-        />
-      </TouchableOpacity>
+    items.push({
+      type: 'header',
+      key: 'header-pending',
+      title: `Hábitos não completados - ${pendingHabits.length}`
+    });
 
-      <View style={styles.cardContent}>
-        <Text style={[
-          styles.cardTitle,
-          isCompleted && { textDecorationLine: 'line-through', color: '#999' }
-        ]}>
-          {item.title}
-        </Text>
-        {item.description ? (
-          <Text style={styles.cardDescription} numberOfLines={1}>
-            {item.description}
+    if (pendingHabits.length === 0 && completedHabits.length === 0) {
+      items.push({
+        type: 'empty',
+        key: 'empty-all',
+        text: isToday ? 'Você não tem hábitos para hoje. Crie um novo! :)' : 'Nenhum hábito planejado para este dia.'
+      });
+    } else if (pendingHabits.length === 0) {
+      items.push({
+        type: 'empty',
+        key: 'empty-pending',
+        text: 'Tudo feito! 🎉'
+      });
+    } else {
+      pendingHabits.forEach(h => {
+        items.push({ type: 'habit', key: h.id, data: h, isCompleted: false });
+      });
+    }
+
+    if (completedHabits.length > 0) {
+      items.push({
+        type: 'header',
+        key: 'header-completed',
+        title: `Hábitos completados - ${completedHabits.length}`,
+        style: { marginTop: 25 }
+      });
+      completedHabits.forEach(h => {
+        items.push({ type: 'habit', key: h.id, data: h, isCompleted: true });
+      });
+    }
+
+    return items.map(item => {
+      if (item.type === 'header') {
+        return (
+          <Text key={item.key} style={[styles.sectionTitle, item.style]}>
+            {item.title}
           </Text>
-        ) : null}
-      </View>
-
-      {item.notificationTime && (
-        <View style={styles.timeContainer}>
-          <Ionicons name="time-outline" size={14} color="#777" />
-          <Text style={styles.timeText}>{item.notificationTime}</Text>
-        </View>
-      )}
-
-      <TouchableOpacity
-        style={styles.menuButton}
-        onPress={() => handleOpenOptions(item)}
-      >
-        <Ionicons name="ellipsis-vertical" size={20} color="#999" />
-      </TouchableOpacity>
-    </View>
-  );
+        );
+      }
+      if (item.type === 'empty') {
+        return (
+          <Text key={item.key} style={styles.emptyText}>
+            {item.text}
+          </Text>
+        );
+      }
+      if (item.type === 'habit') {
+        return (
+          <AnimatedHabitCard 
+            key={item.key} 
+            item={item.data} 
+            isCompleted={item.isCompleted} 
+            onToggle={handleToggleCheck}
+            onOption={handleOpenOptions}
+          />
+        );
+      }
+      return null;
+    });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
@@ -245,25 +323,7 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>Hábitos não completados - {pendingHabits.length}</Text>
-        {pendingHabits.length === 0 && completedHabits.length === 0 ? (
-          <Text style={styles.emptyText}>
-            {isToday 
-              ? 'Você não tem hábitos para hoje. Crie um novo! :)' 
-              : 'Nenhum hábito planejado para este dia.'}
-          </Text>
-        ) : pendingHabits.length === 0 ? (
-          <Text style={styles.emptyText}>Tudo feito! 🎉</Text>
-        ) : (
-          pendingHabits.map(item => <HabitCard key={item.id} item={item} isCompleted={false} />)
-        )}
-
-        {completedHabits.length > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { marginTop: 25 }]}>Hábitos completados - {completedHabits.length}</Text>
-            {completedHabits.map(item => <HabitCard key={item.id} item={item} isCompleted={true} />)}
-          </>
-        )}
+        {renderItems()}
       </ScrollView>
 
       <Modal
