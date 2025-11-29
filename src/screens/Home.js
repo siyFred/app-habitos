@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { AnimatedFAB, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,29 +6,112 @@ import { fab } from '../styles/styles_components.js'
 import { getAllHabits, updateHabit, deleteHabit } from '../repositories/HabitRepository';
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import AllHabitsCard from './utils/AllHabitsCard';
+import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 
-const getTodayDateString = () => {
-  const date = new Date();
+const formatDate = (date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 };
 
+const getCurrentWeekDays = () => {
+  const today = new Date();
+  const currentDay = today.getDay(); // 0 is Sunday
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - currentDay);
+  
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sunday);
+    d.setDate(sunday.getDate() + i);
+    days.push(d);
+  }
+  return days;
+};
+
+const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+const fullWeekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+// card habit (deve ser movido para um arquivo separado dps)
+const HabitCard = ({ item, isCompleted, onToggle, onOption }) => (
+  <View style={styles.cardContainer}>
+
+    <TouchableOpacity
+      style={styles.checkboxArea}
+      onPress={() => onToggle(item)}
+    >
+      <Ionicons
+        name={isCompleted ? "checkbox" : "square-outline"}
+        size={28}
+        color={isCompleted ? "#7B1FA2" : "#999"}
+      />
+    </TouchableOpacity>
+
+    <View style={styles.cardContent}>
+      <Text style={[
+        styles.cardTitle,
+        isCompleted && { textDecorationLine: 'line-through', color: '#999' }
+      ]}>
+        {item.title}
+      </Text>
+      {item.description ? (
+        <Text style={styles.cardDescription} numberOfLines={1}>
+          {item.description}
+        </Text>
+      ) : null}
+    </View>
+
+    {item.notificationTime && (
+      <View style={styles.timeContainer}>
+        <Ionicons name="time-outline" size={14} color="#777" />
+        <Text style={styles.timeText}>{item.notificationTime}</Text>
+      </View>
+    )}
+
+    <TouchableOpacity
+      style={styles.menuButton}
+      onPress={() => onOption(item)}
+    >
+      <Ionicons name="ellipsis-vertical" size={20} color="#999" />
+    </TouchableOpacity>
+  </View>
+);
+
+const AnimatedHabitCard = ({ item, isCompleted, onToggle, onOption }) => (
+  <Animated.View
+    layout={LinearTransition.springify()}
+  >
+    <HabitCard item={item} isCompleted={isCompleted} onToggle={onToggle} onOption={onOption} />
+  </Animated.View>
+);
+
 export default function HomeScreen({ navigation }) {
   const [isExtended, setIsExtended] = useState(true);
   const [habits, setHabits] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [weekDates, setWeekDates] = useState([]);
 
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState(null);
+  const [isFabVisible, setIsFabVisible] = useState(false);
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
 
-  const todayDateStr = getTodayDateString();
-  const todayDayIndex = new Date().getDay();
+  const selectedDateStr = formatDate(selectedDate);
+  const selectedDayIndex = selectedDate.getDay();
+  const isToday = selectedDateStr === formatDate(new Date());
+
+  useEffect(() => {
+    setWeekDates(getCurrentWeekDays());
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       loadHabits();
+      setIsFabVisible(true);
+      return () => setIsFabVisible(false);
     }, [])
   );
 
@@ -40,21 +123,21 @@ export default function HomeScreen({ navigation }) {
   async function handleToggleCheck(habit) {
     try {
       const completedDates = habit.completedDates || [];
-      const isCompletedToday = completedDates.includes(todayDateStr);
+      const isCompletedOnSelectedDate = completedDates.includes(selectedDateStr);
 
       let newDates;
 
-      if (isCompletedToday) {
-        newDates = completedDates.filter(date => date !== todayDateStr);
+      if (isCompletedOnSelectedDate) {
+        newDates = completedDates.filter(date => date !== selectedDateStr);
       } else {
-        newDates = [...completedDates, todayDateStr];
+        newDates = [...completedDates, selectedDateStr];
       }
 
       await updateHabit(habit.id, { completedDates: newDates });
 
       await loadHabits();
 
-      if (!isCompletedToday) {
+      if (!isCompletedOnSelectedDate) {
         Toast.show({ type: 'success', text1: 'Hábito concluído!', visibilityTime: 2000 });
       }
 
@@ -64,9 +147,9 @@ export default function HomeScreen({ navigation }) {
     }
   }
 
-  const todaysHabits = habits.filter(h => (h.frequency || []).includes(todayDayIndex));
-  const pendingHabits = todaysHabits.filter(h => !(h.completedDates || []).includes(todayDateStr));
-  const completedHabits = todaysHabits.filter(h => (h.completedDates || []).includes(todayDateStr));
+  const displayedHabits = habits.filter(h => (h.frequency || []).includes(selectedDayIndex));
+  const pendingHabits = displayedHabits.filter(h => !(h.completedDates || []).includes(selectedDateStr));
+  const completedHabits = displayedHabits.filter(h => (h.completedDates || []).includes(selectedDateStr));
 
   pendingHabits.sort((a, b) => {
     if (!a.notificationTime) return -1;
@@ -114,53 +197,113 @@ export default function HomeScreen({ navigation }) {
     }
   }
 
-  // card habit (deve ser movido para um arquivo separado dps)
-  const HabitCard = ({ item, isCompleted }) => (
-    <View style={styles.cardContainer}>
+  const renderItems = () => {
+    const items = [];
 
-      <TouchableOpacity
-        style={styles.checkboxArea}
-        onPress={() => handleToggleCheck(item)}
-      >
-        <Ionicons
-          name={isCompleted ? "checkbox" : "square-outline"}
-          size={28}
-          color={isCompleted ? "#7B1FA2" : "#999"}
-        />
-      </TouchableOpacity>
+    items.push({
+      type: 'header',
+      key: 'header-pending',
+      title: `Hábitos não completados - ${pendingHabits.length}`
+    });
 
-      <View style={styles.cardContent}>
-        <Text style={[
-          styles.cardTitle,
-          isCompleted && { textDecorationLine: 'line-through', color: '#999' }
-        ]}>
-          {item.title}
-        </Text>
-        {item.description ? (
-          <Text style={styles.cardDescription} numberOfLines={1}>
-            {item.description}
+    if (pendingHabits.length === 0 && completedHabits.length === 0) {
+      items.push({
+        type: 'empty',
+        key: 'empty-all',
+        text: isToday ? 'Você não tem hábitos para hoje. Crie um novo! :)' : 'Nenhum hábito planejado para este dia.'
+      });
+    } else if (pendingHabits.length === 0) {
+      items.push({
+        type: 'empty',
+        key: 'empty-pending',
+        text: 'Tudo feito! 🎉'
+      });
+    } else {
+      pendingHabits.forEach(h => {
+        items.push({ type: 'habit', key: h.id, data: h, isCompleted: false });
+      });
+    }
+
+    if (completedHabits.length > 0) {
+      items.push({
+        type: 'header',
+        key: 'header-completed',
+        title: `Hábitos completados - ${completedHabits.length}`,
+        style: { marginTop: 25 }
+      });
+      completedHabits.forEach(h => {
+        items.push({ type: 'habit', key: h.id, data: h, isCompleted: true });
+      });
+    }
+
+    return items.map(item => {
+      if (item.type === 'header') {
+        return (
+          <Text key={item.key} style={[styles.sectionTitle, item.style]}>
+            {item.title}
           </Text>
-        ) : null}
-      </View>
-
-      {item.notificationTime && (
-        <View style={styles.timeContainer}>
-          <Ionicons name="time-outline" size={14} color="#777" />
-          <Text style={styles.timeText}>{item.notificationTime}</Text>
-        </View>
-      )}
-
-      <TouchableOpacity
-        style={styles.menuButton}
-        onPress={() => handleOpenOptions(item)}
-      >
-        <Ionicons name="ellipsis-vertical" size={20} color="#999" />
-      </TouchableOpacity>
-    </View>
-  );
+        );
+      }
+      if (item.type === 'empty') {
+        return (
+          <Text key={item.key} style={styles.emptyText}>
+            {item.text}
+          </Text>
+        );
+      }
+      if (item.type === 'habit') {
+        return (
+          <AnimatedHabitCard 
+            key={item.key} 
+            item={item.data} 
+            isCompleted={item.isCompleted} 
+            onToggle={handleToggleCheck}
+            onOption={handleOpenOptions}
+          />
+        );
+      }
+      return null;
+    });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
+      
+      <View style={styles.calendarContainer}>
+        {weekDates.map((date, index) => {
+          const isSelected = formatDate(date) === selectedDateStr;
+          const isTodayDate = formatDate(date) === formatDate(new Date());
+          
+          return (
+            <Button 
+              key={index} 
+              mode={isSelected ? 'contained' : 'text'}
+              onPress={() => setSelectedDate(date)}
+              style={[
+                styles.dayButton, 
+                isTodayDate && !isSelected && styles.dayButtonToday
+              ]}
+              contentStyle={styles.dayButtonContent}
+              labelStyle={{ marginHorizontal: 0, marginVertical: 0 }}
+              buttonColor={isSelected ? '#7B1FA2' : 'transparent'}
+              textColor={isSelected ? '#FFF' : '#333'}
+              compact
+              shape={{ borderRadius: 12 }}
+            >
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <Text numberOfLines={1} style={[styles.dayLabel, isSelected && styles.dayTextSelected]}>{weekDays[index]}</Text>
+                <Text 
+                  numberOfLines={1} 
+                  adjustsFontSizeToFit
+                  style={[styles.dayNumber, isSelected && styles.dayTextSelected]}
+                >
+                  {String(date.getDate()).padStart(2, '0')}
+                </Text>
+              </View>
+            </Button>
+          );
+        })}
+      </View>
 
       <ScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
@@ -168,23 +311,19 @@ export default function HomeScreen({ navigation }) {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.dateHeader}>Hoje</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <Text style={[styles.dateHeader, { marginBottom: 0 }]}>
+            {isToday 
+              ? 'Hoje' 
+              : `${fullWeekDays[selectedDayIndex]} - ${selectedDate.getDate()}/${selectedDate.getMonth() + 1}${selectedDate.getFullYear() !== new Date().getFullYear() ? `/${selectedDate.getFullYear()}` : ''}`
+            }
+          </Text>
+          <TouchableOpacity onPress={() => setCalendarModalVisible(true)}>
+            <Ionicons name="calendar" size={24} color="#7B1FA2" />
+          </TouchableOpacity>
+        </View>
 
-        <Text style={styles.sectionTitle}>A fazer - {pendingHabits.length}</Text>
-        {pendingHabits.length === 0 && completedHabits.length === 0 ? (
-          <Text style={styles.emptyText}>Você não tem hábitos para hoje. Crie um novo! :)</Text>
-        ) : pendingHabits.length === 0 ? (
-          <Text style={styles.emptyText}>Tudo feito por hoje! 🎉</Text>
-        ) : (
-          pendingHabits.map(item => <HabitCard key={item.id} item={item} isCompleted={false} />)
-        )}
-
-        {completedHabits.length > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { marginTop: 25 }]}>Concluídos - {completedHabits.length}</Text>
-            {completedHabits.map(item => <HabitCard key={item.id} item={item} isCompleted={true} />)}
-          </>
-        )}
+        {renderItems()}
       </ScrollView>
 
       <Modal
@@ -241,17 +380,29 @@ export default function HomeScreen({ navigation }) {
         </View>
       </Modal>
 
-      <AnimatedFAB
-        label="Novo Hábito"
-        icon={({ size, color }) => <Ionicons name="add" size={size} color={color} />}
-        labelStyle={{ fontSize: 14, fontWeight: '600', marginLeft: -8 }}
-        extended={isExtended}
-        onPress={handleCreateHabit}
-        visible={true}
-        animateFrom={'right'}
-        iconMode={'dynamic'}
-        style={fab}
-        color="#FFF"
+      {isFabVisible && (
+        <AnimatedFAB
+          label="Novo Hábito"
+          icon={({ size, color }) => <Ionicons name="add" size={size} color={color} />}
+          labelStyle={{ fontSize: 14, fontWeight: '600', marginLeft: -8 }}
+          extended={isExtended}
+          onPress={handleCreateHabit}
+          visible={true}
+          animateFrom={'right'}
+          iconMode={'dynamic'}
+          style={fab}
+          color="#FFF"
+        />
+      )}
+
+      <AllHabitsCard 
+        visible={calendarModalVisible} 
+        onClose={() => setCalendarModalVisible(false)} 
+        habits={habits}
+        onSelectDate={(date) => {
+          setSelectedDate(date);
+          setCalendarModalVisible(false);
+        }}
       />
     </View>
   );
@@ -278,5 +429,13 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#EEE', marginVertical: 5 },
   confirmModalContent: { backgroundColor: '#FFF', padding: 24, borderRadius: 20, width: '85%', elevation: 5, alignItems: 'center' },
   modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#333' },
-  modalButtonsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, width: '100%' }
+  modalButtonsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, width: '100%' },
+
+  calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, paddingVertical: 15, backgroundColor: '#FFF', marginBottom: 10, elevation: 2 },
+  dayButton: { flex: 1, height: 60, marginHorizontal: 1, borderRadius: 12, minWidth: 40, padding: 0 },
+  dayButtonContent: { height: 60, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 0 },
+  dayButtonToday: { borderWidth: 1, borderColor: '#7B1FA2' },
+  dayLabel: { fontSize: 12, color: '#999', marginBottom: 0, lineHeight: 14, textAlign: 'center' },
+  dayNumber: { fontSize: 16, fontWeight: 'bold', color: '#333', lineHeight: 20, textAlign: 'center' },
+  dayTextSelected: { color: '#FFF' }
 });
