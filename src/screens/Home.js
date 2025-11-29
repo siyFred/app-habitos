@@ -6,6 +6,7 @@ import { fab } from '../styles/styles_components.js'
 import { getAllHabits, updateHabit, deleteHabit } from '../repositories/HabitRepository';
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import AllHabitsCard from './utils/AllHabitsCard';
 
 const formatDate = (date) => {
   const y = date.getFullYear();
@@ -42,6 +43,7 @@ export default function HomeScreen({ navigation }) {
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState(null);
   const [isFabVisible, setIsFabVisible] = useState(false);
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
 
   const selectedDateStr = formatDate(selectedDate);
   const selectedDayIndex = selectedDate.getDay();
@@ -231,9 +233,17 @@ export default function HomeScreen({ navigation }) {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.dateHeader}>
-          {isToday ? 'Hoje' : `${fullWeekDays[selectedDayIndex]} - ${selectedDate.getDate()}/${selectedDate.getMonth() + 1}`}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <Text style={[styles.dateHeader, { marginBottom: 0 }]}>
+            {isToday 
+              ? 'Hoje' 
+              : `${fullWeekDays[selectedDayIndex]} - ${selectedDate.getDate()}/${selectedDate.getMonth() + 1}${selectedDate.getFullYear() !== new Date().getFullYear() ? `/${selectedDate.getFullYear()}` : ''}`
+            }
+          </Text>
+          <TouchableOpacity onPress={() => setCalendarModalVisible(true)}>
+            <Ionicons name="calendar" size={24} color="#7B1FA2" />
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.sectionTitle}>Hábitos não completados - {pendingHabits.length}</Text>
         {pendingHabits.length === 0 && completedHabits.length === 0 ? (
@@ -324,6 +334,16 @@ export default function HomeScreen({ navigation }) {
           color="#FFF"
         />
       )}
+
+      <AllHabitsCard 
+        visible={calendarModalVisible} 
+        onClose={() => setCalendarModalVisible(false)} 
+        habits={habits}
+        onSelectDate={(date) => {
+          setSelectedDate(date);
+          setCalendarModalVisible(false);
+        }}
+      />
     </View>
   );
 }

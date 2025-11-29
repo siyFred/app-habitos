@@ -6,6 +6,7 @@ export function createHabitModel(id, title, description = null, frequency, notif
     description,
     frequency,
     completedDates: [],
-    notificationTime
+    notificationTime,
+    createdAt: new Date().toISOString().split('T')[0]
   };
 }
