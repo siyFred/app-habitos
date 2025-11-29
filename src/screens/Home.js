@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView, Pressable, Platform, TouchableNativeFeedback } from 'react-native';
 import { AnimatedFAB, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { fab } from '../styles/styles_components.js'
@@ -7,7 +7,7 @@ import { getAllHabits, updateHabit, deleteHabit } from '../repositories/HabitRep
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import AllHabitsCard from './utils/AllHabitsCard';
-import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 const formatDate = (date) => {
   const y = date.getFullYear();
@@ -274,21 +274,54 @@ export default function HomeScreen({ navigation }) {
           const isSelected = formatDate(date) === selectedDateStr;
           const isTodayDate = formatDate(date) === formatDate(new Date());
           
+          if (Platform.OS === 'android') {
+            return (
+              <View 
+                key={index}
+                style={[
+                  styles.dayButton, 
+                  isTodayDate && styles.dayButtonToday,
+                  { 
+                    borderRadius: 12, 
+                    overflow: 'hidden',
+                    backgroundColor: isSelected ? '#7B1FA2' : 'transparent'
+                  }
+                ]}
+              >
+                <TouchableNativeFeedback
+                  onPress={() => setSelectedDate(date)}
+                  background={TouchableNativeFeedback.Ripple(isSelected ? "rgba(255, 255, 255, 0.32)" : "rgba(123, 31, 162, 0.3)", false)}
+                  useForeground={true}
+                >
+                  <View style={{ 
+                    flex: 1, 
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <Text numberOfLines={1} style={[styles.dayLabel, isSelected && styles.dayTextSelected]}>{weekDays[index]}</Text>
+                    <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.dayNumber, isSelected && styles.dayTextSelected]}>
+                      {String(date.getDate()).padStart(2, '0')}
+                    </Text>
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            );
+          }
+
           return (
-            <Button 
+            <TouchableOpacity
               key={index} 
-              mode={isSelected ? 'contained' : 'text'}
               onPress={() => setSelectedDate(date)}
               style={[
                 styles.dayButton, 
-                isTodayDate && !isSelected && styles.dayButtonToday
+                isTodayDate && !isSelected && styles.dayButtonToday,
+                { 
+                  backgroundColor: isSelected ? '#7B1FA2' : 'transparent',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden'
+                }
               ]}
-              contentStyle={styles.dayButtonContent}
-              labelStyle={{ marginHorizontal: 0, marginVertical: 0 }}
-              buttonColor={isSelected ? '#7B1FA2' : 'transparent'}
-              textColor={isSelected ? '#FFF' : '#333'}
-              compact
-              shape={{ borderRadius: 12 }}
             >
               <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                 <Text numberOfLines={1} style={[styles.dayLabel, isSelected && styles.dayTextSelected]}>{weekDays[index]}</Text>
@@ -300,7 +333,7 @@ export default function HomeScreen({ navigation }) {
                   {String(date.getDate()).padStart(2, '0')}
                 </Text>
               </View>
-            </Button>
+            </TouchableOpacity>
           );
         })}
       </View>
