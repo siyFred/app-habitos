@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Button, IconButton } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/themeContext';
 
 const months = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -9,6 +10,7 @@ const months = [
 ];
 
 export default function AllHabitsCard({ visible, onClose, habits, onSelectDate }) {
+  const { theme } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [daysInMonth, setDaysInMonth] = useState([]);
 
@@ -72,40 +74,40 @@ export default function AllHabitsCard({ visible, onClose, habits, onSelectDate }
       onRequestClose={onClose}
     >
       <TouchableOpacity 
-        style={styles.modalOverlay} 
+        style={styles(theme).modalOverlay} 
         activeOpacity={1} 
         onPress={onClose}
       >
-        <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Calendário de Hábitos</Text>
+        <View style={styles(theme).modalContent} onStartShouldSetResponder={() => true}>
+          <View style={styles(theme).header}>
+            <Text style={styles(theme).title}>Calendário de Hábitos</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color={theme.text_primary} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.controlsRow}>
+          <View style={styles(theme).controlsRow}>
             <IconButton icon="chevron-left" size={20} onPress={() => changeYear(-1)} />
-            <Text style={styles.yearText}>{currentDate.getFullYear()}</Text>
+            <Text style={styles(theme).yearText}>{currentDate.getFullYear()}</Text>
             <IconButton icon="chevron-right" size={20} onPress={() => changeYear(1)} />
           </View>
 
-          <View style={styles.controlsRow}>
+          <View style={styles(theme).controlsRow}>
             <IconButton icon="chevron-left" size={20} onPress={() => changeMonth(-1)} />
-            <Text style={styles.monthText}>{months[currentDate.getMonth()]}</Text>
+            <Text style={styles(theme).monthText}>{months[currentDate.getMonth()]}</Text>
             <IconButton icon="chevron-right" size={20} onPress={() => changeMonth(1)} />
           </View>
 
-          <View style={styles.weekDaysRow}>
+          <View style={styles(theme).weekDaysRow}>
             {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, index) => (
-              <Text key={index} style={styles.weekDayText}>{day}</Text>
+              <Text key={index} style={styles(theme).weekDayText}>{day}</Text>
             ))}
           </View>
 
-          <View style={styles.daysGrid}>
+          <View style={styles(theme).daysGrid}>
             {daysInMonth.map((date, index) => {
               if (!date) {
-                return <View key={index} style={styles.emptyDay} />;
+                return <View key={index} style={styles(theme).emptyDay} />;
               }
 
               const hasHabit = hasHabitOnDay(date);
@@ -116,14 +118,14 @@ export default function AllHabitsCard({ visible, onClose, habits, onSelectDate }
                   key={index}
                   mode="outlined"
                   style={[
-                    styles.dayButton,
-                    hasHabit ? styles.dayButtonWithHabit : styles.dayButtonNoHabit,
-                    isToday && styles.dayButtonToday
+                    styles(theme).dayButton,
+                    hasHabit ? styles(theme).dayButtonWithHabit : styles(theme).dayButtonNoHabit,
+                    isToday && styles(theme).dayButtonToday
                   ]}
-                  contentStyle={styles.dayButtonContent}
+                  contentStyle={styles(theme).dayButtonContent}
                   labelStyle={[
-                    styles.dayButtonLabel,
-                    !hasHabit && styles.dayButtonLabelNoHabit
+                    styles(theme).dayButtonLabel,
+                    !hasHabit && styles(theme).dayButtonLabelNoHabit
                   ]}
                   compact
                   onPress={() => {
@@ -139,14 +141,14 @@ export default function AllHabitsCard({ visible, onClose, habits, onSelectDate }
             })}
           </View>
           
-          <View style={styles.legendContainer}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E0E0E0' }]} />
-              <Text style={styles.legendText}>Com hábitos</Text>
+          <View style={styles(theme).legendContainer}>
+            <View style={styles(theme).legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border }]} />
+              <Text style={styles(theme).legendText}>Com hábitos</Text>
             </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#E0E0E0' }]} />
-              <Text style={styles.legendText}>Sem hábitos</Text>
+            <View style={styles(theme).legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: theme.disabled }]} />
+              <Text style={styles(theme).legendText}>Sem hábitos</Text>
             </View>
           </View>
 
@@ -156,15 +158,15 @@ export default function AllHabitsCard({ visible, onClose, habits, onSelectDate }
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: theme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.surface,
     width: '90%',
     borderRadius: 20,
     padding: 20,
@@ -180,7 +182,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.text_primary,
   },
   controlsRow: {
     flexDirection: 'row',
@@ -191,12 +193,12 @@ const styles = StyleSheet.create({
   yearText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#555',
+    color: theme.text_secondary,
   },
   monthText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#7B1FA2',
+    color: theme.primary,
     textTransform: 'uppercase',
   },
   weekDaysRow: {
@@ -204,13 +206,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
     marginTop: 10,
-    paddingHorizontal: 5
+    paddingHorizontal: 5,
+
   },
   weekDayText: {
     width: 35,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#999',
+    color: theme.text_secondary,
     fontSize: 12
   },
   daysGrid: {
@@ -229,7 +232,7 @@ const styles = StyleSheet.create({
     margin: '0.3%',
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: theme.border,
   },
   dayButtonContent: {
     height: '100%',
@@ -237,31 +240,31 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   dayButtonWithHabit: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
   },
   dayButtonNoHabit: {
-    backgroundColor: '#E0E0E0',
-    borderColor: '#E0E0E0',
+    backgroundColor: theme.disabled,
+    borderColor: theme.disabled,
   },
   dayButtonToday: {
-    borderColor: '#7B1FA2',
+    borderColor: theme.primary,
     borderWidth: 2,
   },
   dayButtonLabel: {
     fontSize: 12,
-    color: '#333',
+    color: theme.text_primary,
     marginHorizontal: 0,
     marginVertical: 0,
   },
   dayButtonLabelNoHabit: {
-    color: '#999',
+    color: theme.text_tertiary,
   },
   legendContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#EEE',
+    borderTopColor: theme.divider,
     paddingTop: 15
   },
   legendItem: {
@@ -276,6 +279,6 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: '#666',
+    color: theme.text_secondary,
   }
 });

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
-import { colors_white } from "../styles/theme";
+import { useTheme } from '../context/themeContext';
 import { getAllHabits } from "../repositories/HabitRepository";
 import { useFocusEffect } from '@react-navigation/native';
 
-const CartaoEstatistica = ({ titulo, valor, descricao }) => (
+const CartaoEstatistica = ({ titulo, valor, descricao, styles }) => (
   <View style={styles.card}>
     <Text style={styles.cardTitle}>{titulo}</Text>
     <Text style={styles.cardValue}>{valor}</Text>
@@ -12,7 +12,7 @@ const CartaoEstatistica = ({ titulo, valor, descricao }) => (
   </View>
 );
 
-const CartaoDesempenhoHabito = ({ nomeHabito, porcentagem }) => {
+const CartaoDesempenhoHabito = ({ nomeHabito, porcentagem, styles }) => {
   const animWidth = useRef(new Animated.Value(porcentagem)).current;
 
   useEffect(() => {
@@ -40,7 +40,9 @@ const CartaoDesempenhoHabito = ({ nomeHabito, porcentagem }) => {
 };
 
 export default function TelaStatus() {
+  const { theme } = useTheme();
   const [habits, setHabits] = useState([]);
+  const styles = createStyles(theme);
   const [periodoDias, setPeriodoDias] = useState(7);
 
   useFocusEffect(
@@ -125,9 +127,11 @@ export default function TelaStatus() {
         <CartaoEstatistica
           titulo="Progresso Hoje"
           valor={`${porcentagemHoje.toFixed(0)}%`}
-          descricao={`${concluidosHoje} de ${totalHabitosHoje} hábitos`}
+          descricao={`${concluidosHoje} de ${totalHabitosHoje} hábitos`} 
+          styles={styles}
         />
         <CartaoEstatistica
+          styles={styles}
           titulo="Maior Sequência"
           valor={`${maiorSequencia} dias`}
           descricao="Maior sequência de um hábito"
@@ -173,29 +177,29 @@ export default function TelaStatus() {
 
       <Text style={styles.subHeader}>Desempenho por Hábito</Text>
       {desempenhoHabitos.map((habit, index) => (
-        <CartaoDesempenhoHabito key={index} nomeHabito={habit.nome} porcentagem={habit.porcentagem} />
+        <CartaoDesempenhoHabito key={index} nomeHabito={habit.nome} porcentagem={habit.porcentagem} styles={styles} />
       ))}
 
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: theme.background,
     padding: 20,
   },
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    color: colors_white.text,
+    color: theme.text_primary,
     marginBottom: 20,
   },
   subHeader: {
     fontSize: 22,
     fontWeight: '600',
-    color: colors_white.text,
+    color: theme.text_primary,
     marginTop: 30,
     marginBottom: 15,
   },
@@ -204,12 +208,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 15,
     width: '48%',
     alignItems: 'center',
-    shadowColor: "#000",
+    shadowColor: theme.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -217,12 +221,12 @@ const styles = StyleSheet.create({
   },
   segmentedContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 30,
     padding: 4,
     marginTop: 15,
     marginBottom: 10,
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -235,37 +239,37 @@ const styles = StyleSheet.create({
     borderRadius: 26,
   },
   segmentedButtonActive: {
-    backgroundColor: colors_white.primary,
+    backgroundColor: theme.primary,
   },
   segmentedText: {
-    color: '#333',
+    color: theme.text_primary,
     fontWeight: '600',
   },
   segmentedTextActive: {
-    color: '#fff',
+    color: theme.text_on_primary,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#555',
+    color: theme.text_secondary,
   },
   cardValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors_white.primary,
+    color: theme.primary,
     marginVertical: 8,
   },
   cardDescription: {
     fontSize: 12,
-    color: '#777',
+    color: theme.text_secondary,
     textAlign: 'center',
   },
   habitCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 15,
     marginBottom: 10,
-    shadowColor: "#000",
+    shadowColor: theme.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -274,23 +278,23 @@ const styles = StyleSheet.create({
   habitName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: theme.text_primary,
   },
   progressBarBackground: {
     height: 8,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: theme.disabled,
     borderRadius: 4,
     marginTop: 10,
     marginBottom: 5,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: colors_white.primary,
+    backgroundColor: theme.primary,
     borderRadius: 4,
   },
   habitPercentage: {
     fontSize: 12,
-    color: '#555',
+    color: theme.text_secondary,
     alignSelf: 'flex-end',
   }
 });

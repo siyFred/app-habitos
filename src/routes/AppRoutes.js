@@ -8,20 +8,22 @@ import StatsScreen from '../screens/StatusScreen';
 import NewHabitScreen from '../screens/NewHabit';
 import ConfigScreen from '../screens/ConfigScreen';
 
-import { colors_white } from '../styles/theme';
+import { useTheme } from '../context/themeContext';
 
 const Tab = createMaterialBottomTabNavigator();
 
 const Stack = createStackNavigator();
 
 function TabRoutes() {
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
         initialRouteName="Meus Hábitos"
-        activeColor={colors_white.primary}
-        inactiveColor={colors_white.neutral}
+        activeColor={theme.primary}
+        inactiveColor={theme.neutral}
         shifting={true}
-        barStyle={{ backgroundColor: '#fff' }}
+        barStyle={{ backgroundColor: theme.surface }}
+        
     >
       <Tab.Screen
         name="Meus Hábitos"
@@ -58,8 +60,9 @@ function TabRoutes() {
 }
 
 export default function AppRoutes() {
+  const { theme } = useTheme();
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f2f2f2' }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'left', 'right']}>
       <Stack.Navigator screenOptions={{ headerShown: false, ...TransitionPresets.FadeFromBottomAndroid}}>
         <Stack.Screen name="MainTabs" component={TabRoutes} />
         <Stack.Screen 

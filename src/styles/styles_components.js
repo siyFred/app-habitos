@@ -1,13 +1,10 @@
-import { colors_white } from './theme.js';
-
-export const fab = {
-  backgroundColor: colors_white.primary,
+export const createFabStyles = (theme) => ({
+  backgroundColor: theme.primary,
   position: 'absolute',
-  borderRadius: 16,
   borderRadius: 16,
   bottom: 20,
   right: 20,
-  shadowColor: "#000",
+  shadowColor: theme.black,
   shadowOffset: {
     width: 0,
     height: 4,
@@ -15,81 +12,45 @@ export const fab = {
   shadowOpacity: 0.30,
   shadowRadius: 4.65,
   elevation: 4,
-  // paper gerencia outras propriedades internamente
-}
+});
 
-export const label = {
+export const createLabelStyles = (theme) => ({
   fontSize: 15,
   fontWeight: 'bold',
-  color: '#333',
+  color: theme.text_primary,
   marginBottom: 8,
-};
+});
 
-export const input = {
+export const createInputStyles = (theme) => ({
   height: 50,
-  borderColor: '#ccc',
+  backgroundColor: theme.background,
+  borderColor: theme.border,
   borderWidth: 1,
   borderRadius: 8,
   paddingHorizontal: 10,
   fontSize: 16,
-  color: '#000',
+  color: theme.text_primary,
   marginBottom: 15,
-};
+});
 
-export const dayButton = {
+export const createDayButtonStyles = (theme) => ({
   width: 40,
   height: 40,
   borderRadius: 20,
-  backgroundColor: '#F0F0F0',
+  backgroundColor: theme.background,
   alignItems: 'center',
   justifyContent: 'center',
-};
+});
 
-export const dayButtonSelected = {
-  backgroundColor: colors_white.primary,
-};
+export const createDayButtonSelectedStyles = (theme) => ({
+  backgroundColor: theme.primary,
+});
 
-export const dayText = {
-  color: '#000',
+export const createDayTextStyles = (theme) => ({
+  color: theme.text_primary,
   fontWeight: 'bold',
-};
+});
 
-export const dayTextSelected = {
-  color: '#FFF',
-};
-
-export const cancelButton = {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#383838',
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 8,
-  marginTop: 20,
-  height: 50,
-  width: '48%',
-};
-
-export const cancelButtonText = {
-  color: '#FFF',
-  fontSize: 17,
-};
-
-export const saveButton = {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: colors_white.primary,
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 8,
-  marginTop: 20,
-  height: 50,
-  width: '48%',
-};
-
-export const saveButtonText = {
-  color: '#FFF',
-  fontSize: 17,
-};
+export const createDayTextSelectedStyles = (theme) => ({
+  color: theme.text_on_primary,
+});

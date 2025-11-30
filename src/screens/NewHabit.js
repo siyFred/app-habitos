@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Platform, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
 
-import { dayButton, dayButtonSelected, dayText, dayTextSelected, label, input } from '../styles/styles_components';
 import { createAndSaveHabit, updateHabit } from '../repositories/HabitRepository';
+import { useTheme } from '../context/themeContext';
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 export default function NewHabitScreen({ navigation, route }) {
-  // verifica se é edição
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  
   const habitToEdit = route.params?.habitToEdit;
   const isEditing = !!habitToEdit;
 
@@ -93,103 +95,292 @@ export default function NewHabitScreen({ navigation, route }) {
   }
 
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: '#fff' }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#333' }}>
-          {isEditing ? 'Editar Hábito' : 'Novo Hábito'}
-        </Text>
-
-        <Text style={label}>Nome</Text>
-        <TextInput
-          style={input}
-          placeholder="Ex: Beber Água"
-          placeholderTextColor="#999"
-          value={title}
-          onChangeText={setTitle}
-        />
-
-        <Text style={label}>Descrição (Opcional)</Text>
-        <TextInput
-          style={input}
-          placeholder="Detalhes..."
-          placeholderTextColor="#999"
-          value={description}
-          onChangeText={setDescription}
-        />
-
-        <Text style={label}>Horário (Opcional)</Text>
-        <TouchableOpacity
-          style={[input, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
-          onPress={() => setShowPicker(true)}
-        >
-          <Text style={{ color: notificationDate ? '#333' : '#999', fontSize: 16 }}>
-            {notificationDate ? formatTime(notificationDate) : "Sem horário definido"}
-          </Text>
-          {notificationDate ? (
-            <TouchableOpacity onPress={() => setNotificationDate(null)}>
-              <Ionicons name="close-circle" size={24} color="#999" />
-            </TouchableOpacity>
-          ) : (
-            <Ionicons name="time-outline" size={24} color="#999" />
-          )}
-        </TouchableOpacity>
-
-        {showPicker && (
-          <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: 10 }}>
-            <DateTimePicker
-              value={notificationDate || new Date()}
-              mode="time"
-              is24Hour={true}
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleTimeChange}
-              style={{ width: Platform.OS === 'ios' ? 320 : '100%' }}
-            />
-            {Platform.OS === 'ios' && (
-              <TouchableOpacity onPress={() => setShowPicker(false)} style={{ marginTop: 8 }}>
-                <Text style={{ color: '#7B1FA2', fontWeight: '600' }}>Concluído</Text>
-              </TouchableOpacity>
-            )}
+    <View style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerTitle}>{isEditing ? 'Editar Hábito' : 'Novo Hábito'}</Text>
+            <Text style={styles.headerSubtitle}>
+              {isEditing ? 'Ajuste seus objetivos e continue evoluindo.' : 'Comece pequeno, sonhe grande.'}
+            </Text>
           </View>
-        )}
 
-        <Text style={label}>Selecione a frequência</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
-          {WEEK_DAYS.map((day, index) => {
-            const isSelected = frequency.includes(index);
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[dayButton, isSelected && dayButtonSelected]}
-                onPress={() => toggleDay(index)}
-              >
-                <Text style={[dayText, isSelected && dayTextSelected]}>{day}</Text>
+          <Text style={styles.label}>O QUE VOCÊ QUER FAZER?</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="sparkles-outline" size={20} color={theme.primary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: Ler 10 páginas, Beber água..."
+              placeholderTextColor={theme.text_tertiary}
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+
+          <Text style={styles.label}>DETALHES (OPCIONAL)</Text>
+          <View style={[styles.inputContainer, { alignItems: 'flex-start', paddingVertical: 6 }]}>
+            <Ionicons name="document-text-outline" size={20} color={theme.text_secondary} style={[styles.inputIcon, { marginTop: 10 }]} />
+            <TextInput
+              style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
+              placeholder="Adicione uma motivação ou detalhes..."
+              placeholderTextColor={theme.text_tertiary}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+            />
+          </View>
+
+          <Text style={styles.label}>QUANDO?</Text>
+          <View style={styles.frequencyContainer}>
+            {WEEK_DAYS.map((day, index) => {
+              const isSelected = frequency.includes(index);
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.dayButton, isSelected && styles.dayButtonSelected]}
+                  onPress={() => toggleDay(index)}
+                >
+                  <Text style={[styles.dayText, isSelected && styles.dayTextSelected]}>{day}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={styles.label}>LEMBRETE (OPCIONAL)</Text>
+          <TouchableOpacity
+            style={styles.timeCard}
+            onPress={() => setShowPicker(true)}
+            activeOpacity={0.7}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconBox, { backgroundColor: notificationDate ? theme.primary + '20' : theme.surface }]}>
+                <Ionicons name={notificationDate ? "alarm" : "alarm-outline"} size={24} color={notificationDate ? theme.primary : theme.text_tertiary} />
+              </View>
+              <View style={{ marginLeft: 15 }}>
+                <Text style={styles.timeCardTitle}>Horário da notificação</Text>
+                <Text style={styles.timeCardValue}>
+                  {notificationDate ? formatTime(notificationDate) : "Sem horário definido"}
+                </Text>
+              </View>
+            </View>
+            
+            {notificationDate ? (
+              <TouchableOpacity onPress={() => setNotificationDate(null)} style={{ padding: 5 }}>
+                <Ionicons name="close" size={20} color={theme.text_tertiary} />
               </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
+            ) : (
+              <Ionicons name="chevron-forward" size={20} color={theme.text_tertiary} />
+            )}
+          </TouchableOpacity>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, gap: 15 }}>
+          {showPicker && (
+            <View style={styles.pickerContainer}>
+              <DateTimePicker
+                value={notificationDate || new Date()}
+                mode="time"
+                is24Hour={true}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleTimeChange}
+                style={{ width: Platform.OS === 'ios' ? 320 : '100%' }}
+                textColor={theme.text_primary}
+              />
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity onPress={() => setShowPicker(false)} style={styles.iosPickerDone}>
+                  <Text style={{ color: theme.primary, fontWeight: '600', fontSize: 16 }}>Pronto</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      <View style={styles.footer}>
         <Button
-          mode="outlined"
+          mode="text"
           onPress={() => navigation.goBack()}
-          textColor="#666"
-          style={{ flex: 1, borderColor: '#DDD', borderRadius: 12 }}
-          contentStyle={{ height: 50 }}
+          textColor={theme.text_secondary}
+          style={{ flex: 1, marginRight: 8 }}
+          labelStyle={{ fontSize: 16, fontWeight: '600' }}
         >
           Cancelar
         </Button>
         <Button
           mode="contained"
           onPress={handleSave}
-          buttonColor="#7B1FA2"
-          textColor="#FFF"
-          style={{ flex: 1, borderRadius: 12 }}
-          contentStyle={{ height: 50 }}
+          buttonColor={theme.primary}
+          textColor={theme.text_on_primary}
+          style={styles.saveButton}
+          labelStyle={{ fontSize: 16, fontWeight: 'bold', paddingVertical: 4 }}
         >
-          {isEditing ? 'Atualizar' : 'Salvar'}
+          {isEditing ? 'Salvar Alterações' : 'Criar Hábito'}
         </Button>
       </View>
     </View>
   );
 }
+
+const createStyles = (theme) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.background,
+  },
+  scrollContent: {
+    padding: 24,
+    paddingBottom: 100,
+  },
+  headerContainer: {
+    marginBottom: 32,
+    marginTop: 5,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: theme.text_primary,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: theme.text_secondary,
+    lineHeight: 22,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.text_secondary,
+    marginBottom: 10,
+    marginTop: 5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.surface,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56, // Altura fixa para input de linha única
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+    // Sombra suave
+    shadowColor: theme.black || '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.text_primary,
+    height: '100%',
+  },
+  frequencyContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  dayButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.border,
+    elevation: 1,
+  },
+  dayButtonSelected: {
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
+    elevation: 4,
+    shadowColor: theme.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  dayText: {
+    fontSize: 14,
+    color: theme.text_secondary,
+    fontWeight: '600',
+  },
+  dayTextSelected: {
+    color: theme.text_on_primary,
+    fontWeight: 'bold',
+  },
+  timeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.surface,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.border,
+    shadowColor: theme.black || '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timeCardTitle: {
+    fontSize: 14,
+    color: theme.text_secondary,
+    marginBottom: 2,
+  },
+  timeCardValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.text_primary,
+  },
+  pickerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: 15,
+    backgroundColor: theme.surface,
+    borderRadius: 16,
+    padding: 10,
+  },
+  iosPickerDone: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: theme.background,
+    borderRadius: 20,
+  },
+  footer: {
+    padding: 20,
+    backgroundColor: theme.background,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: theme.divider,
+  },
+  saveButton: {
+    flex: 2,
+    borderRadius: 14,
+    elevation: 4,
+    shadowColor: theme.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  }
+});

@@ -2,11 +2,12 @@ import { useCallback, useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView, Pressable, Platform, TouchableNativeFeedback } from 'react-native';
 import { AnimatedFAB, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { fab } from '../styles/styles_components.js'
+import { createFabStyles } from '../styles/styles_components.js'
 import { getAllHabits, updateHabit, deleteHabit } from '../repositories/HabitRepository';
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import AllHabitsCard from './utils/AllHabitsCard';
+import { useTheme } from '../context/themeContext';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
 const formatDate = (date) => {
@@ -35,8 +36,9 @@ const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const fullWeekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
 // card habit (deve ser movido para um arquivo separado dps)
-const HabitCard = ({ item, isCompleted, onToggle, onOption }) => (
-  <View style={styles.cardContainer}>
+const HabitCard = ({ item, isCompleted, onToggle, onOption, theme, styles }) => {
+  return (
+    <View style={styles.cardContainer}>
 
     <TouchableOpacity
       style={styles.checkboxArea}
@@ -45,14 +47,14 @@ const HabitCard = ({ item, isCompleted, onToggle, onOption }) => (
       <Ionicons
         name={isCompleted ? "checkbox" : "square-outline"}
         size={28}
-        color={isCompleted ? "#7B1FA2" : "#999"}
+        color={isCompleted ? theme.primary : theme.text_tertiary}
       />
     </TouchableOpacity>
 
     <View style={styles.cardContent}>
       <Text style={[
         styles.cardTitle,
-        isCompleted && { textDecorationLine: 'line-through', color: '#999' }
+        isCompleted && { textDecorationLine: 'line-through', color: theme.text_tertiary }
       ]}>
         {item.title}
       </Text>
@@ -65,7 +67,7 @@ const HabitCard = ({ item, isCompleted, onToggle, onOption }) => (
 
     {item.notificationTime && (
       <View style={styles.timeContainer}>
-        <Ionicons name="time-outline" size={14} color="#777" />
+        <Ionicons name="time-outline" size={14} color={theme.text_secondary} />
         <Text style={styles.timeText}>{item.notificationTime}</Text>
       </View>
     )}
@@ -74,16 +76,17 @@ const HabitCard = ({ item, isCompleted, onToggle, onOption }) => (
       style={styles.menuButton}
       onPress={() => onOption(item)}
     >
-      <Ionicons name="ellipsis-vertical" size={20} color="#999" />
+      <Ionicons name="ellipsis-vertical" size={20} color={theme.text_tertiary} />
     </TouchableOpacity>
   </View>
-);
+  );
+};
 
-const AnimatedHabitCard = ({ item, isCompleted, onToggle, onOption }) => (
+const AnimatedHabitCard = ({ item, isCompleted, onToggle, onOption, theme, styles }) => (
   <Animated.View
     layout={LinearTransition.springify()}
   >
-    <HabitCard item={item} isCompleted={isCompleted} onToggle={onToggle} onOption={onOption} />
+    <HabitCard item={item} isCompleted={isCompleted} onToggle={onToggle} onOption={onOption} theme={theme} styles={styles} />
   </Animated.View>
 );
 
@@ -98,6 +101,10 @@ export default function HomeScreen({ navigation }) {
   const [selectedHabit, setSelectedHabit] = useState(null);
   const [isFabVisible, setIsFabVisible] = useState(false);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  const fabStyles = createFabStyles(theme);
 
   const selectedDateStr = formatDate(selectedDate);
   const selectedDayIndex = selectedDate.getDay();
@@ -259,6 +266,8 @@ export default function HomeScreen({ navigation }) {
             isCompleted={item.isCompleted} 
             onToggle={handleToggleCheck}
             onOption={handleOpenOptions}
+            theme={theme}
+            styles={styles}
           />
         );
       }
@@ -267,8 +276,8 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
-      
+    <View style={styles.container}>
+
       <View style={styles.calendarContainer}>
         {weekDates.map((date, index) => {
           const isSelected = formatDate(date) === selectedDateStr;
@@ -284,13 +293,13 @@ export default function HomeScreen({ navigation }) {
                   { 
                     borderRadius: 12, 
                     overflow: 'hidden',
-                    backgroundColor: isSelected ? '#7B1FA2' : 'transparent'
+                    backgroundColor: isSelected ? theme.primary : 'transparent'
                   }
                 ]}
               >
                 <TouchableNativeFeedback
                   onPress={() => setSelectedDate(date)}
-                  background={TouchableNativeFeedback.Ripple(isSelected ? "rgba(255, 255, 255, 0.32)" : "rgba(123, 31, 162, 0.3)", false)}
+                  background={TouchableNativeFeedback.Ripple(isSelected ? "rgba(255, 255, 255, 0.32)" : "rgba(123, 31, 162, 0.2)", false)}
                   useForeground={true}
                 >
                   <View style={{ 
@@ -316,7 +325,7 @@ export default function HomeScreen({ navigation }) {
                 styles.dayButton, 
                 isTodayDate && !isSelected && styles.dayButtonToday,
                 { 
-                  backgroundColor: isSelected ? '#7B1FA2' : 'transparent',
+                  backgroundColor: isSelected ? theme.primary : 'transparent',
                   justifyContent: 'center',
                   alignItems: 'center',
                   overflow: 'hidden'
@@ -352,7 +361,7 @@ export default function HomeScreen({ navigation }) {
             }
           </Text>
           <TouchableOpacity onPress={() => setCalendarModalVisible(true)}>
-            <Ionicons name="calendar" size={24} color="#7B1FA2" />
+            <Ionicons name="calendar" size={24} color={theme.primary} />
           </TouchableOpacity>
         </View>
 
@@ -374,15 +383,15 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.modalTitle}>Opções</Text>
 
             <TouchableOpacity style={styles.optionButton} onPress={handleEdit}>
-              <Ionicons name="pencil" size={20} color="#333" />
+              <Ionicons name="pencil" size={20} color={theme.text_primary} />
               <Text style={styles.optionText}>Editar Hábito</Text>
             </TouchableOpacity>
 
             <View style={styles.divider} />
 
             <TouchableOpacity style={styles.optionButton} onPress={handleDeleteRequest}>
-              <Ionicons name="trash-outline" size={20} color="#B00020" />
-              <Text style={[styles.optionText, { color: '#B00020' }]}>Excluir Hábito</Text>
+              <Ionicons name="trash-outline" size={20} color={theme.danger} />
+              <Text style={[styles.optionText, { color: theme.danger }]}>Excluir Hábito</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -397,15 +406,15 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.confirmModalContent}>
             <Text style={styles.modalTitle}>Excluir Hábito?</Text>
-            <Text style={{ marginBottom: 20, color: '#666', textAlign: 'center' }}>
+            <Text style={{ marginBottom: 20, color: theme.text_secondary, textAlign: 'center' }}>
               Isso apagará "{selectedHabit?.title}" e todo o histórico dele para sempre.
             </Text>
 
             <View style={styles.modalButtonsRow}>
-              <Button mode="outlined" onPress={() => setDeleteConfirmVisible(false)} textColor="#555" style={{ flex: 1, marginRight: 10 }}>
+              <Button mode="outlined" onPress={() => setDeleteConfirmVisible(false)} textColor={theme.text_secondary} style={{ flex: 1, marginRight: 10 }}>
                 Cancelar
               </Button>
-              <Button mode="contained" onPress={confirmDelete} buttonColor="#B00020" style={{ flex: 1 }}>
+              <Button mode="contained" onPress={confirmDelete} buttonColor={theme.danger} style={{ flex: 1 }}>
                 Excluir
               </Button>
             </View>
@@ -423,8 +432,8 @@ export default function HomeScreen({ navigation }) {
           visible={true}
           animateFrom={'right'}
           iconMode={'dynamic'}
-          style={fab}
-          color="#FFF"
+          style={fabStyles}
+          color={theme.text_on_primary}
         />
       )}
 
@@ -441,34 +450,35 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  dateHeader: { fontSize: 30, fontWeight: 'bold', color: '#333', marginBottom: 10 },
-  sectionTitle: { fontSize: 14, fontWeight: 'bold', color: '#7B1FA2', marginBottom: 10, marginTop: 10, textTransform: 'uppercase', letterSpacing: 1 },
-  emptyText: { color: '#999', fontStyle: 'italic', marginTop: 10 },
-
-  cardContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', paddingVertical: 15, paddingHorizontal: 15, marginBottom: 12, borderRadius: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
+const createStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
+  dateHeader: { fontSize: 30, fontWeight: 'bold', color: theme.text_primary, marginBottom: 10 },
+  sectionTitle: { fontSize: 14, fontWeight: 'bold', color: theme.primary, marginBottom: 10, marginTop: 10, textTransform: 'uppercase', letterSpacing: 1 },
+  emptyText: { color: theme.text_tertiary, fontStyle: 'italic', marginTop: 10 },
+  
+  cardContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.surface, paddingVertical: 15, paddingHorizontal: 15, marginBottom: 12, borderRadius: 16, elevation: 2, shadowColor: theme.black, shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
   checkboxArea: { marginRight: 15 },
   cardContent: { flex: 1 },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: '#333' },
-  cardDescription: { fontSize: 12, color: '#888', marginTop: 2 },
-  timeContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F0F0', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginRight: 10 },
-  timeText: { fontSize: 12, color: '#555', marginLeft: 4, fontWeight: '500' },
+  cardTitle: { fontSize: 16, fontWeight: '600', color: theme.text_primary },
+  cardDescription: { fontSize: 12, color: theme.text_secondary, marginTop: 2 },
+  timeContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginRight: 10 },
+  timeText: { fontSize: 12, color: theme.text_secondary, marginLeft: 4, fontWeight: '500' },
   menuButton: { padding: 5 },
-
-  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
-  optionsModalContent: { backgroundColor: '#FFF', padding: 20, borderRadius: 16, width: '70%', elevation: 5 },
+  
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.overlay },
+  optionsModalContent: { backgroundColor: theme.surface, padding: 20, borderRadius: 16, width: '70%', elevation: 5 },
   optionButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
-  optionText: { fontSize: 16, marginLeft: 15, color: '#333', fontWeight: '500' },
-  divider: { height: 1, backgroundColor: '#EEE', marginVertical: 5 },
-  confirmModalContent: { backgroundColor: '#FFF', padding: 24, borderRadius: 20, width: '85%', elevation: 5, alignItems: 'center' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#333' },
+  optionText: { fontSize: 16, marginLeft: 15, color: theme.text_primary, fontWeight: '500' },
+  divider: { height: 1, backgroundColor: theme.divider, marginVertical: 5 },
+  confirmModalContent: { backgroundColor: theme.surface, padding: 24, borderRadius: 20, width: '85%', elevation: 5, alignItems: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: theme.text_primary },
   modalButtonsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, width: '100%' },
-
-  calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, paddingVertical: 15, backgroundColor: '#FFF', marginBottom: 10, elevation: 2 },
+  
+  calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, paddingVertical: 15, backgroundColor: theme.surface, marginBottom: 10, elevation: 2 },
   dayButton: { flex: 1, height: 60, marginHorizontal: 1, borderRadius: 12, minWidth: 40, padding: 0 },
   dayButtonContent: { height: 60, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 0 },
-  dayButtonToday: { borderWidth: 1, borderColor: '#7B1FA2' },
-  dayLabel: { fontSize: 12, color: '#999', marginBottom: 0, lineHeight: 14, textAlign: 'center' },
-  dayNumber: { fontSize: 16, fontWeight: 'bold', color: '#333', lineHeight: 20, textAlign: 'center' },
-  dayTextSelected: { color: '#FFF' }
+  dayButtonToday: { borderWidth: 1, borderColor: theme.primary },
+  dayLabel: { fontSize: 12, color: theme.text_tertiary, marginBottom: 0, lineHeight: 14, textAlign: 'center' },
+  dayNumber: { fontSize: 16, fontWeight: 'bold', color: theme.text_primary, lineHeight: 20, textAlign: 'center' },
+  dayTextSelected: { color: theme.text_on_primary }
 });

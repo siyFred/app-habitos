@@ -1,55 +1,66 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { colors_white } from '../styles/theme';
+import { useTheme } from '../context/themeContext';
 import { deleteAllHabits } from '../repositories/HabitRepository';
 import Toast from 'react-native-toast-message';
 
 export default function ConfigScreen() {
+  const { theme, setThemeMode, themeMode } = useTheme();
   const [isThemeModalVisible, setThemeModalVisible] = useState(false);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const handleDeleteAllData = () => {
-    Alert.alert(
-      "Apagar Todos os Dados",
-      "Você tem certeza? Esta ação não pode ser desfeita e todos os seus hábitos serão perdidos.",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel"
-        },
-        { text: "Apagar", style: 'destructive', onPress: async () => {
-            await deleteAllHabits();
-            Toast.show({ type: 'success', text1: 'Dados apagados com sucesso!' });
-        }}
-      ]
-    );
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteData = async () => {
+    try {
+      await deleteAllHabits();
+      Toast.show({ type: 'success', text1: 'Dados apagados com sucesso!' });
+    } catch (error) {
+      Toast.show({ type: 'error', text1: 'Erro ao apagar dados.' });
+    } finally {
+      setDeleteModalVisible(false);
+    }
+  };
+
+  const handleSelectTheme = (mode) => {
+    setThemeMode(mode);
+    setThemeModalVisible(false);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.profileBox}>
-        <View style={styles.profileRow}>
+    <View style={styles(theme).container}>
+      <View style={styles(theme).profileBox}>
+        <View style={styles(theme).profileRow}>
           <Image
             source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
-            style={styles.avatar}
+            style={styles(theme).avatar}
           />
           <View style={{ flex: 1}}>
-            <Text style={styles.profileName}>Gabriela <Text style={{fontSize:18}}>👋</Text></Text>
+            <Text style={styles(theme).profileName}>Gabriela <Text style={{fontSize:18}}>👋</Text></Text>
           </View>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#555" />
+          <TouchableOpacity style={styles(theme).iconButton}>
+            <Ionicons name="notifications-outline" size={24} color={theme.text_secondary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.optionsBox}>
+      <View style={styles(theme).optionsBox}>
         <OptionItem 
-          icon={<Ionicons name="moon" size={28} color={colors_white.primary} />} 
+          icon={<Ionicons name="moon" size={28} color={theme.primary} />} 
           title="Tema" 
-          subtitle="Claro e Escuro" 
+          subtitle={themeMode === 'system' ? 'Padrão do Sistema' : (themeMode === 'dark' ? 'Escuro' : 'Claro')} 
           onPress={() => setThemeModalVisible(true)}
+          theme={theme}
         />
-        <OptionItem icon={<Ionicons name="trash" size={28} color= {colors_white.primary} />} title="Apagar Dados" onPress={handleDeleteAllData} />
+        <OptionItem 
+          icon={<Ionicons name="trash" size={28} color= {theme.primary} />} 
+          title="Apagar Dados" 
+          onPress={handleDeleteAllData} 
+          theme={theme} 
+        />
       </View>
 
       <Modal
@@ -58,67 +69,153 @@ export default function ConfigScreen() {
         visible={isThemeModalVisible}
         onRequestClose={() => setThemeModalVisible(false)}
       >
-        <Pressable style={styles.modalBackdrop} onPress={() => setThemeModalVisible(false)}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Escolha um tema</Text>
+        <Pressable style={styles(theme).modalBackdrop} onPress={() => setThemeModalVisible(false)}>
+          <View style={styles(theme).modalContent}>
+            <Text style={styles(theme).modalTitle}>Escolha um tema</Text>
             
-            <TouchableOpacity style={styles.themeOption}>
-              <Ionicons name="sunny-outline" size={22} color="#555" style={styles.themeOptionIcon} />
-              <Text style={styles.themeOptionText}>Claro</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.themeOption}>
-              <Ionicons name="moon-outline" size={22} color="#555" style={styles.themeOptionIcon} />
-              <Text style={styles.themeOptionText}>Escuro</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.themeOption}>
-              <Ionicons name="cog-outline" size={22} color="#555" style={styles.themeOptionIcon} />
-              <Text style={styles.themeOptionText}>Padrão do Sistema</Text>
+            <TouchableOpacity 
+              style={[
+                styles(theme).themeOption, 
+                themeMode === 'light' && { backgroundColor: theme.divider }
+              ]} 
+              onPress={() => handleSelectTheme('light')}
+            >
+              <Ionicons 
+                name="sunny-outline" 
+                size={22} 
+                color={themeMode === 'light' ? theme.primary : theme.text_secondary} 
+                style={styles(theme).themeOptionIcon} 
+              />
+              <Text style={[
+                styles(theme).themeOptionText,
+                themeMode === 'light' && { color: theme.primary, fontWeight: 'bold' }
+              ]}>
+                Claro
+              </Text>
+              {themeMode === 'light' && <Ionicons name="checkmark" size={20} color={theme.primary} style={{marginLeft: 'auto'}}/>}
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.closeButton} onPress={() => setThemeModalVisible(false)}>
-                <Text style={styles.closeButtonText}>Fechar</Text>
+            <TouchableOpacity 
+              style={[
+                styles(theme).themeOption, 
+                themeMode === 'dark' && { backgroundColor: theme.divider }
+              ]} 
+              onPress={() => handleSelectTheme('dark')}
+            >
+              <Ionicons 
+                name="moon-outline" 
+                size={22} 
+                color={themeMode === 'dark' ? theme.primary : theme.text_secondary} 
+                style={styles(theme).themeOptionIcon} 
+              />
+              <Text style={[
+                styles(theme).themeOptionText,
+                themeMode === 'dark' && { color: theme.primary, fontWeight: 'bold' }
+              ]}>
+                Escuro
+              </Text>
+              {themeMode === 'dark' && <Ionicons name="checkmark" size={20} color={theme.primary} style={{marginLeft: 'auto'}}/>}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[
+                styles(theme).themeOption, 
+                themeMode === 'system' && { backgroundColor: theme.divider }
+              ]} 
+              onPress={() => handleSelectTheme('system')}
+            >
+              <Ionicons 
+                name="cog-outline" 
+                size={22} 
+                color={themeMode === 'system' ? theme.primary : theme.text_secondary} 
+                style={styles(theme).themeOptionIcon} 
+              />
+              <Text style={[
+                styles(theme).themeOptionText,
+                themeMode === 'system' && { color: theme.primary, fontWeight: 'bold' }
+              ]}>
+                Padrão do Sistema
+              </Text>
+              {themeMode === 'system' && <Ionicons name="checkmark" size={20} color={theme.primary} style={{marginLeft: 'auto'}}/>}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles(theme).closeButton} onPress={() => setThemeModalVisible(false)}>
+                <Text style={styles(theme).closeButtonText}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
 
-      <TouchableOpacity style={styles.logoutButton}>
-        <Ionicons name="arrow-back-outline" size={20} color="#222" style={{ marginRight: 8 }} />
-        <Text style={styles.logoutText}>Sair do aplicativo</Text>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isDeleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <Pressable style={styles(theme).modalBackdrop} onPress={() => setDeleteModalVisible(false)}>
+          <View style={styles(theme).modalContent}>
+            <Ionicons name="warning-outline" size={48} color={theme.danger} style={{ marginBottom: 15 }} />
+            <Text style={styles(theme).modalTitle}>Apagar Todos os Dados</Text>
+            <Text style={styles(theme).modalDescription}>
+              Você tem certeza? Esta ação não pode ser desfeita e todos os seus hábitos serão perdidos para sempre.
+            </Text>
+
+            <View style={styles(theme).modalButtonsRow}>
+              <TouchableOpacity 
+                style={[styles(theme).actionButton, { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.divider }]} 
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={[styles(theme).actionButtonText, { color: theme.text_primary }]}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles(theme).actionButton, { backgroundColor: theme.danger }]} 
+                onPress={confirmDeleteData}
+              >
+                <Text style={[styles(theme).actionButtonText, { color: '#FFF' }]}>Apagar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <TouchableOpacity style={styles(theme).logoutButton}>
+        <Ionicons name="arrow-back-outline" size={20} color={theme.text_primary} style={{ marginRight: 8 }} />
+        <Text style={styles(theme).logoutText}>Sair do aplicativo</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-function OptionItem({ icon, title, subtitle, onPress }) {
+function OptionItem({ icon, title, subtitle, onPress, theme }) {
   return (
-    <TouchableOpacity style={styles.optionItem} onPress={onPress}>
-      <View style={styles.optionIcon}>{icon}</View>
+    <TouchableOpacity style={styles(theme).optionItem} onPress={onPress}>
+      <View style={styles(theme).optionIcon}>{icon}</View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.optionTitle}>{title}</Text>
-        {subtitle && <Text style={styles.optionSubtitle}>{subtitle}</Text>}
+        <Text style={styles(theme).optionTitle}>{title}</Text>
+        {subtitle && <Text style={styles(theme).optionSubtitle}>{subtitle}</Text>}
       </View>
-      <Ionicons name="chevron-forward" size={26} color="#bbb" />
+      <Ionicons name="chevron-forward" size={26} color={theme.text_tertiary} />
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: theme.background,
     padding: 20,
   },
   profileBox: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 18,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: theme.divider,
     borderRadius:10,
     marginBottom: 8,
-    shadowColor: '#000',
+    shadowColor: theme.black || '#000',
     elevation: 2,
     
   },
@@ -135,12 +232,12 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 19,
     fontWeight: 'bold',
-    color: '#222',
+    color: theme.text_primary,
     marginBottom: 2,
   },
   profileInfo: {
     fontSize: 13,
-    color: '#666',
+    color: theme.text_secondary,
   },
   iconButton: {
     padding: 8,
@@ -153,12 +250,12 @@ const styles = StyleSheet.create({
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     paddingVertical: 28,
     paddingHorizontal: 24,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: theme.black || '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 4,
@@ -173,17 +270,17 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 18,
-    color: '#222',
+    color: theme.text_primary,
     fontWeight: '600',
     marginBottom: 2,
   },
   optionSubtitle: {
     fontSize: 15,
-    color: '#888',
+    color: theme.text_secondary,
     marginTop: 2,
   },
   logoutButton: {
-    backgroundColor: '#ededed',
+    backgroundColor: theme.divider,
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,7 +291,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   logoutText: {
-    color: '#222',
+    color: theme.text_primary,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -202,10 +299,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.overlay || 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: theme.surface,
     padding: 20,
     borderRadius: 15,
     width: '80%',
@@ -215,17 +312,26 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
+    color: theme.text_primary,
+    textAlign: 'center',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: theme.text_secondary,
+    textAlign: 'center',
     marginBottom: 20,
+    lineHeight: 20,
   },
   themeOption: {
     width: '100%',
-    paddingVertical: 15 ,
     paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: theme.divider,
     flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 8,
   },
   themeOptionIcon: {
     marginRight: 15,
@@ -233,17 +339,37 @@ const styles = StyleSheet.create({
   themeOptionText: {
     textAlign: 'center',
     fontSize: 16,
-    color: '#000',
+    color: theme.text_primary,
   },
   closeButton: {
       marginTop: 20,
       paddingVertical: 10,
       paddingHorizontal: 30,
       borderRadius: 20,
-      backgroundColor: '#f1f1f1',
+      backgroundColor: theme.background,
+      borderWidth: 1,
+      borderColor: theme.divider
   },
   closeButtonText: {
-      color: '#555',
+      color: theme.text_primary,
       fontWeight: '600',
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+    gap: 10,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   }
 });
