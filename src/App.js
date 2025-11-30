@@ -12,7 +12,6 @@ import AppRoutes from './routes/AppRoutes';
 import { ThemeProvider, useTheme } from '../src/context/themeContext';
 
 const MainContent = () => {
-    // Agora pegamos 'themeType' também, para saber se é dark ou light
     const { theme, themeType } = useTheme();
 
     // Proteção contra erro de carregamento
@@ -30,7 +29,7 @@ const MainContent = () => {
                 text1Style={{
                     fontSize: 15,
                     fontWeight: '400',
-                    color: theme.text_primary // Ajustado para o nome do seu tema
+                    color: theme.text_primary
                 }}
             />
         ),
@@ -42,12 +41,14 @@ const MainContent = () => {
         )
     };
 
-    // Configura o tema do Paper corretamente
+    const isDark = themeType === 'dark'; 
+    const baseTheme = isDark ? MD3DarkTheme : MD3LightTheme;
+    
     const paperTheme = {
-      ...(themeType === 'dark' ? MD3DarkTheme : MD3LightTheme),
+      ...baseTheme,
       colors: {
-        ...(themeType === 'dark' ? MD3DarkTheme.colors : MD3LightTheme.colors),
-        ...theme,
+        ...baseTheme.colors,
+        ...theme
       },
     };
 

@@ -2,6 +2,7 @@ import { createMaterialBottomTabNavigator } from '@react-navigation/material-bot
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme as usePaperTheme } from 'react-native-paper';
 
 import HomeScreen from '../screens/Home';
 import StatsScreen from '../screens/StatusScreen';
@@ -15,24 +16,41 @@ const Tab = createMaterialBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function TabRoutes() {
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const paperTheme = usePaperTheme();
+
   return (
     <Tab.Navigator
         initialRouteName="Meus Hábitos"
-        activeColor={theme.primary}
-        inactiveColor={theme.neutral}
+        activeColor={themeType === 'dark' ? theme.primary : paperTheme.colors.primary}
+        inactiveColor={themeType === 'dark' ? theme.text_on_primary : theme.neutral}
         shifting={true}
         barStyle={{ backgroundColor: theme.surface }}
-        
+        theme={paperTheme}
+        activeIndicatorStyle={
+          themeType === 'dark'
+            ? { backgroundColor: theme.activeIndicatorStyle }
+            : undefined
+        }
     >
       <Tab.Screen
         name="Meus Hábitos"
         component={HomeScreen}
         options={{
             tabBarLabel: 'Hábitos',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "checkbox" : "checkbox-outline"} size={26} color={color} style={{ marginTop: -1 }} />
-            ),
+            tabBarIcon: ({ color, focused }) => {
+              const iconColor = themeType === 'dark'
+                ? (focused ? theme.primary : theme.text_on_primary)
+                : color;
+              return (
+                <Ionicons
+                  name={focused ? "checkbox" : "checkbox-outline"}
+                  size={26}
+                  color={iconColor}
+                  style={{ marginTop: -1 }}
+                />
+              );
+            },
         }}
       />
       <Tab.Screen 
@@ -40,9 +58,19 @@ function TabRoutes() {
         component={StatsScreen}
         options={{
             tabBarLabel: 'Estatísticas',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={26} color={color} style={{ marginTop: -1 }} />
-            ),
+            tabBarIcon: ({ color, focused }) => {
+              const iconColor = themeType === 'dark'
+                ? (focused ? theme.primary : theme.text_on_primary)
+                : color;
+              return (
+                <Ionicons
+                  name={focused ? "stats-chart" : "stats-chart-outline"}
+                  size={26}
+                  color={iconColor}
+                  style={{ marginTop: -1 }}
+                />
+              );
+            },
         }}
       />
       <Tab.Screen 
@@ -50,9 +78,19 @@ function TabRoutes() {
         component={ConfigScreen}
         options={{
             tabBarLabel: 'Configurações',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? "cog" : "cog"} size={26} color={color} style={{ marginTop: -1 }} />
-            ),
+            tabBarIcon: ({ color, focused }) => {
+              const iconColor = themeType === 'dark'
+                ? (focused ? theme.primary : theme.text_on_primary)
+                : color;
+              return (
+                <Ionicons
+                  name={focused ? "cog" : "cog"}
+                  size={26}
+                  color={iconColor}
+                  style={{ marginTop: -1 }}
+                />
+              );
+            },
         }}
       />
     </Tab.Navigator>

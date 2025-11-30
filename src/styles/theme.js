@@ -54,4 +54,6 @@ export const colors_dark ={
   neutral: "#5c3f82",      // Neutro adaptado para dark (baseado no original)
   black: '#000000',
 
+  // paper
+  activeIndicatorStyle: 'rgba(74, 20, 140, 0.4)',
 }
