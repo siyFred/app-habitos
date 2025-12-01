@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable, BackHandler } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/themeContext';
 import { deleteAllHabits } from '../repositories/HabitRepository';
@@ -303,7 +303,7 @@ export default function ConfigScreen() {
         </Pressable>
       </Modal>
 
-      <TouchableOpacity style={styles(theme).logoutButton}>
+      <TouchableOpacity style={styles(theme).logoutButton} onPress={() => BackHandler.exitApp()}>
         <Ionicons name="arrow-back-outline" size={20} color={theme.text_primary} style={{ marginRight: 8 }} />
         <Text style={styles(theme).logoutText}>Sair do aplicativo</Text>
       </TouchableOpacity>
