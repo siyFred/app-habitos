@@ -1,14 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Pressable } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/themeContext';
 import { deleteAllHabits } from '../repositories/HabitRepository';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ConfigScreen() {
   const { theme, setThemeMode, themeMode } = useTheme();
   const [isThemeModalVisible, setThemeModalVisible] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [isNotificationModalVisible, setNotificationModalVisible] = useState(false);
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  useEffect(() => {
+    const loadNotificationSettings = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('@habitos:notification_settings');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (typeof parsed.enabled === 'boolean') {
+            setNotificationsEnabled(parsed.enabled);
+          }
+          if (typeof parsed.soundEnabled === 'boolean') {
+            setSoundEnabled(parsed.soundEnabled);
+          }
+        }
+      } catch (e) {
+        console.log('Erro ao carregar configurações de notificação', e);
+      }
+    };
+
+    loadNotificationSettings();
+  }, []);
+
+  const saveNotificationSettings = async (settings) => {
+    try {
+      await AsyncStorage.setItem('@habitos:notification_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.log('Erro ao salvar configurações de notificação', e);
+    }
+  };
 
   const handleDeleteAllData = () => {
     setDeleteModalVisible(true);
@@ -41,7 +75,7 @@ export default function ConfigScreen() {
           <View style={{ flex: 1}}>
             <Text style={styles(theme).profileName}>Gabriela <Text style={{fontSize:18}}>👋</Text></Text>
           </View>
-          <TouchableOpacity style={styles(theme).iconButton}>
+          <TouchableOpacity style={styles(theme).iconButton} onPress={() => setNotificationModalVisible(true)}>
             <Ionicons name="notifications-outline" size={24} color={theme.text_secondary} />
           </TouchableOpacity>
         </View>
@@ -175,6 +209,96 @@ export default function ConfigScreen() {
                 <Text style={[styles(theme).actionButtonText, { color: '#FFF' }]}>Apagar</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isNotificationModalVisible}
+        onRequestClose={() => setNotificationModalVisible(false)}
+      >
+        <Pressable style={styles(theme).modalBackdrop} onPress={() => setNotificationModalVisible(false)}>
+          <View style={styles(theme).modalContent}>
+            <Text style={styles(theme).modalTitle}>Notificações</Text>
+
+            <TouchableOpacity
+              style={[
+                styles(theme).themeOption,
+                notificationsEnabled && { backgroundColor: theme.divider }
+              ]}
+              onPress={async () => {
+                const next = !notificationsEnabled;
+                setNotificationsEnabled(next);
+                await saveNotificationSettings({ enabled: next, soundEnabled });
+              }}
+            >
+              <Ionicons
+                name={notificationsEnabled ? 'notifications' : 'notifications-off-outline'}
+                size={22}
+                color={notificationsEnabled ? theme.primary : theme.text_secondary}
+                style={styles(theme).themeOptionIcon}
+              />
+              <Text
+                style={[
+                  styles(theme).themeOptionText,
+                  notificationsEnabled && { color: theme.primary, fontWeight: 'bold' },
+                ]}
+              >
+                {notificationsEnabled ? 'Notificações ativadas' : 'Notificações desativadas'}
+              </Text>
+              {notificationsEnabled && (
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={theme.primary}
+                  style={{ marginLeft: 'auto' }}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles(theme).themeOption,
+                soundEnabled && { backgroundColor: theme.divider }
+              ]}
+              onPress={async () => {
+                const next = !soundEnabled;
+                setSoundEnabled(next);
+                await saveNotificationSettings({ enabled: notificationsEnabled, soundEnabled: next });
+              }}
+            >
+              <Ionicons
+                name={soundEnabled ? 'volume-high-outline' : 'volume-mute-outline'}
+                size={22}
+                color={soundEnabled ? theme.primary : theme.text_secondary}
+                style={styles(theme).themeOptionIcon}
+              />
+              <Text
+                style={[
+                  styles(theme).themeOptionText,
+                  soundEnabled && { color: theme.primary, fontWeight: 'bold' },
+                ]}
+              >
+                {soundEnabled ? 'Som ativado' : 'Som desativado'}
+              </Text>
+              {soundEnabled && (
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={theme.primary}
+                  style={{ marginLeft: 'auto' }}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles(theme).closeButton}
+              onPress={() => setNotificationModalVisible(false)}
+            >
+              <Text style={styles(theme).closeButtonText}>Fechar</Text>
+            </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
